@@ -20,24 +20,19 @@ Deno.serve(async (req) => {
 
     const externalSupabase = createClient(externalUrl, externalKey)
 
-    // Fetch sample data to understand the structure
-    const { data, error } = await externalSupabase
+    // Fetch all data without limit
+    const { data, error, count } = await externalSupabase
       .from('materias')
-      .select('*')
-      .limit(10)
+      .select('*', { count: 'exact' })
 
     if (error) {
       throw error
     }
 
-    // Get column names from the first row
-    const columns = data && data.length > 0 ? Object.keys(data[0]) : []
-
     return new Response(
       JSON.stringify({ 
-        columns,
-        sampleData: data,
-        totalSample: data?.length || 0
+        data,
+        total: count || data?.length || 0
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
