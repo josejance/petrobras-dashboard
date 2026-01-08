@@ -1,11 +1,15 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import { useMaterias } from '@/hooks/useMaterias';
 import { MetricsCards } from '@/components/dashboard/MetricsCards';
 import { TimelineCharts } from '@/components/dashboard/TimelineCharts';
-import { DistributionCharts } from '@/components/dashboard/DistributionCharts';
-import { CrossAnalysisCharts } from '@/components/dashboard/CrossAnalysisCharts';
 import { SentimentCharts } from '@/components/dashboard/SentimentCharts';
 import { DateRangeFilter } from '@/components/dashboard/DateRangeFilter';
+import { DashboardSidebar, DASHBOARD_SECTIONS } from '@/components/dashboard/DashboardSidebar';
+import { DashboardSection } from '@/components/dashboard/DashboardSection';
+import { MidiaCharts } from '@/components/dashboard/charts/MidiaCharts';
+import { VeiculosCharts } from '@/components/dashboard/charts/VeiculosCharts';
+import { GeografiaCharts } from '@/components/dashboard/charts/GeografiaCharts';
+import { FontesTemasCharts } from '@/components/dashboard/charts/FontesTemasCharts';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -15,6 +19,9 @@ export default function Dashboard() {
   const { data: materias, isLoading, error } = useMaterias();
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
+  const [activeSection, setActiveSection] = useState('kpis');
+  
+  const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
 
   const filteredMaterias = useMemo(() => {
     if (!materias) return [];
@@ -35,20 +42,47 @@ export default function Dashboard() {
     setEndDate(undefined);
   };
 
+  const handleNavigate = useCallback((sectionId: string) => {
+    const element = sectionRefs.current[sectionId];
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, []);
+
+  // Intersection Observer for active section
+  useEffect(() => {
+    const observerOptions = {
+      root: null,
+      rootMargin: '-20% 0px -70% 0px',
+      threshold: 0,
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActiveSection(entry.target.id);
+        }
+      });
+    }, observerOptions);
+
+    Object.values(sectionRefs.current).forEach((ref) => {
+      if (ref) observer.observe(ref);
+    });
+
+    return () => observer.disconnect();
+  }, [isLoading]);
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="max-w-7xl mx-auto space-y-6">
-          <Skeleton className="h-10 w-64" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            {[...Array(5)].map((_, i) => (
-              <Skeleton key={i} className="h-24" />
-            ))}
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {[...Array(3)].map((_, i) => (
-              <Skeleton key={i} className="h-72" />
-            ))}
+      <div className="min-h-screen bg-background">
+        <div className="ml-56 p-6">
+          <div className="max-w-7xl mx-auto space-y-6">
+            <Skeleton className="h-10 w-64" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+              {[...Array(5)].map((_, i) => (
+                <Skeleton key={i} className="h-24" />
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -57,15 +91,17 @@ export default function Dashboard() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="max-w-7xl mx-auto">
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Erro ao carregar dados</AlertTitle>
-            <AlertDescription>
-              {error instanceof Error ? error.message : 'Erro desconhecido'}
-            </AlertDescription>
-          </Alert>
+      <div className="min-h-screen bg-background">
+        <div className="ml-56 p-6">
+          <div className="max-w-7xl mx-auto">
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Erro ao carregar dados</AlertTitle>
+              <AlertDescription>
+                {error instanceof Error ? error.message : 'Erro desconhecido'}
+              </AlertDescription>
+            </Alert>
+          </div>
         </div>
       </div>
     );
@@ -73,15 +109,17 @@ export default function Dashboard() {
 
   if (!materias || materias.length === 0) {
     return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="max-w-7xl mx-auto">
-          <Alert>
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Sem dados</AlertTitle>
-            <AlertDescription>
-              Nenhuma matéria encontrada no banco de dados.
-            </AlertDescription>
-          </Alert>
+      <div className="min-h-screen bg-background">
+        <div className="ml-56 p-6">
+          <div className="max-w-7xl mx-auto">
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Sem dados</AlertTitle>
+              <AlertDescription>
+                Nenhuma matéria encontrada no banco de dados.
+              </AlertDescription>
+            </Alert>
+          </div>
         </div>
       </div>
     );
@@ -91,56 +129,110 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto p-6 space-y-8">
-        {/* Header */}
-        <div className="space-y-4">
-          <div className="space-y-1">
-            <h1 className="text-3xl font-bold tracking-tight">
-              Dashboard de Clipping
-            </h1>
-            <p className="text-muted-foreground">
-              Análise de {filteredMaterias.length.toLocaleString('pt-BR')} matérias
-              {isFiltered && ` (de ${materias.length.toLocaleString('pt-BR')} total)`}
-            </p>
+      <DashboardSidebar activeSection={activeSection} onNavigate={handleNavigate} />
+      
+      <div className="ml-56">
+        {/* Fixed Header */}
+        <header className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="max-w-7xl mx-auto p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <h1 className="text-2xl font-bold tracking-tight">
+                  Dashboard de Clipping
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  Análise de {filteredMaterias.length.toLocaleString('pt-BR')} matérias
+                  {isFiltered && ` (de ${materias.length.toLocaleString('pt-BR')} total)`}
+                </p>
+              </div>
+            </div>
+            
+            <DateRangeFilter
+              startDate={startDate}
+              endDate={endDate}
+              onStartDateChange={setStartDate}
+              onEndDateChange={setEndDate}
+              onClear={handleClearFilters}
+            />
           </div>
-          
-          <DateRangeFilter
-            startDate={startDate}
-            endDate={endDate}
-            onStartDateChange={setStartDate}
-            onEndDateChange={setEndDate}
-            onClear={handleClearFilters}
-          />
-        </div>
+        </header>
 
-        {/* KPIs */}
-        <section>
-          <MetricsCards data={filteredMaterias} />
-        </section>
+        {/* Content */}
+        <main className="max-w-7xl mx-auto p-6 space-y-12">
+          <DashboardSection
+            ref={(el) => { sectionRefs.current['kpis'] = el; }}
+            id="kpis"
+            title="Visão Geral"
+            description="Principais indicadores de desempenho"
+          >
+            <MetricsCards data={filteredMaterias} />
+          </DashboardSection>
 
-        {/* Timeline Charts */}
-        <section className="space-y-4">
-          <h2 className="text-xl font-semibold">Evolução Temporal</h2>
-          <TimelineCharts data={filteredMaterias} />
-        </section>
+          <DashboardSection
+            ref={(el) => { sectionRefs.current['timeline'] = el; }}
+            id="timeline"
+            title="Evolução Temporal"
+            description="Análise de volume, valor e sentimento ao longo do tempo"
+          >
+            <TimelineCharts data={filteredMaterias} />
+          </DashboardSection>
 
-        {/* Distribution Charts */}
-        <section className="space-y-4">
-          <h2 className="text-xl font-semibold">Distribuições</h2>
-          <DistributionCharts data={filteredMaterias} />
-        </section>
+          <DashboardSection
+            ref={(el) => { sectionRefs.current['midia'] = el; }}
+            id="midia"
+            title="Análise por Mídia"
+            description="Distribuição por tipo de mídia, tipo de matéria e abrangência"
+          >
+            <MidiaCharts data={filteredMaterias} />
+          </DashboardSection>
 
-        {/* Cross Analysis */}
-        <section className="space-y-4">
-          <h2 className="text-xl font-semibold">Cruzamentos</h2>
-          <CrossAnalysisCharts data={filteredMaterias} />
-        </section>
+          <DashboardSection
+            ref={(el) => { sectionRefs.current['veiculos'] = el; }}
+            id="veiculos"
+            title="Análise por Veículos"
+            description="Rankings de veículos por volume e valor de mídia"
+          >
+            <VeiculosCharts data={filteredMaterias} />
+          </DashboardSection>
 
-        {/* Sentiment Analysis */}
-        <section className="space-y-4">
-          <h2 className="text-xl font-semibold">Análise de Sentimento</h2>
-          <SentimentCharts data={filteredMaterias} />
-        </section>
+          <DashboardSection
+            ref={(el) => { sectionRefs.current['geografia'] = el; }}
+            id="geografia"
+            title="Análise Geográfica"
+            description="Distribuição por estados e abrangência"
+          >
+            <GeografiaCharts data={filteredMaterias} />
+          </DashboardSection>
+
+          <DashboardSection
+            ref={(el) => { sectionRefs.current['cruzamentos'] = el; }}
+            id="cruzamentos"
+            title="Cruzamentos"
+            description="Análises cruzadas entre diferentes dimensões"
+          >
+            <div className="text-muted-foreground text-sm">
+              Gráficos de cruzamento estão distribuídos nas seções específicas (Mídia x Avaliação, Destaque x Avaliação).
+            </div>
+          </DashboardSection>
+
+          <DashboardSection
+            ref={(el) => { sectionRefs.current['sentimento'] = el; }}
+            id="sentimento"
+            title="Análise de Sentimento"
+            description="Distribuição de teor e evolução do índice K"
+          >
+            <SentimentCharts data={filteredMaterias} />
+          </DashboardSection>
+
+          <DashboardSection
+            ref={(el) => { sectionRefs.current['fontes'] = el; }}
+            id="fontes"
+            title="Fontes e Temas"
+            description="Principais fontes, temas e análise de destaques"
+          >
+            <FontesTemasCharts data={filteredMaterias} />
+          </DashboardSection>
+        </main>
       </div>
     </div>
   );
