@@ -19,21 +19,19 @@ interface CrossAnalysisChartsProps {
 export function CrossAnalysisCharts({ data }: CrossAnalysisChartsProps) {
   // Mídia x Avaliação
   const midiaAvaliacaoData = (() => {
-    const result: Record<string, { name: string; Positivas: number; Negativas: number; Neutras: number }> = {};
+    const result: Record<string, { name: string; Positivas: number; Negativas: number }> = {};
     
     data.forEach(item => {
       const midia = item.Mídia || 'Não informado';
       if (!result[midia]) {
-        result[midia] = { name: midia, Positivas: 0, Negativas: 0, Neutras: 0 };
+        result[midia] = { name: midia, Positivas: 0, Negativas: 0 };
       }
       
       const teor = item.Teor || '';
-      if (teor.includes('Positiva')) {
+      if (teor.toLowerCase().includes('positiva')) {
         result[midia].Positivas += 1;
-      } else if (teor.includes('Negativa')) {
+      } else if (teor.toLowerCase().includes('negativa')) {
         result[midia].Negativas += 1;
-      } else {
-        result[midia].Neutras += 1;
       }
     });
     
@@ -53,21 +51,19 @@ export function CrossAnalysisCharts({ data }: CrossAnalysisChartsProps) {
 
   // Destaque x Avaliação
   const destaqueAvaliacaoData = (() => {
-    const result: Record<string, { name: string; Positivas: number; Negativas: number; Neutras: number }> = {};
+    const result: Record<string, { name: string; Positivas: number; Negativas: number }> = {};
     
     data.forEach(item => {
       const destaque = item.Destaque || 'Não informado';
       if (!result[destaque]) {
-        result[destaque] = { name: destaque, Positivas: 0, Negativas: 0, Neutras: 0 };
+        result[destaque] = { name: destaque, Positivas: 0, Negativas: 0 };
       }
       
       const teor = item.Teor || '';
-      if (teor.includes('Positiva')) {
+      if (teor.toLowerCase().includes('positiva')) {
         result[destaque].Positivas += 1;
-      } else if (teor.includes('Negativa')) {
+      } else if (teor.toLowerCase().includes('negativa')) {
         result[destaque].Negativas += 1;
-      } else {
-        result[destaque].Neutras += 1;
       }
     });
     
@@ -95,7 +91,6 @@ export function CrossAnalysisCharts({ data }: CrossAnalysisChartsProps) {
               />
               <Legend />
               <Bar dataKey="Positivas" fill="hsl(142, 71%, 45%)" stackId="a" />
-              <Bar dataKey="Neutras" fill="hsl(220, 9%, 46%)" stackId="a" />
               <Bar dataKey="Negativas" fill="hsl(0, 84%, 60%)" stackId="a" />
             </BarChart>
           </ResponsiveContainer>
@@ -203,7 +198,6 @@ export function CrossAnalysisCharts({ data }: CrossAnalysisChartsProps) {
               />
               <Legend />
               <Bar dataKey="Positivas" fill="hsl(142, 71%, 45%)" stackId="a" />
-              <Bar dataKey="Neutras" fill="hsl(220, 9%, 46%)" stackId="a" />
               <Bar dataKey="Negativas" fill="hsl(0, 84%, 60%)" stackId="a" />
             </BarChart>
           </ResponsiveContainer>

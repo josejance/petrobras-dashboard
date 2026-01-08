@@ -24,9 +24,11 @@ interface SentimentChartsProps {
 const SENTIMENT_COLORS: Record<string, string> = {
   'Muito Positiva': 'hsl(142, 76%, 36%)',
   'Positiva': 'hsl(142, 71%, 45%)',
-  'Neutra': 'hsl(220, 9%, 46%)',
+  'Pouco positiva': 'hsl(142, 50%, 55%)',
+  'Pouco Positiva': 'hsl(142, 50%, 55%)',
   'Negativa': 'hsl(0, 84%, 60%)',
   'Muito Negativa': 'hsl(0, 72%, 51%)',
+  'Pouco Negativa': 'hsl(0, 60%, 70%)',
   'Não informado': 'hsl(220, 14%, 80%)',
 };
 
