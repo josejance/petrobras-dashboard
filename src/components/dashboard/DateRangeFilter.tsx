@@ -1,7 +1,6 @@
-import { useState } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CalendarIcon, X } from 'lucide-react';
+import { CalendarIcon, X, Filter } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -17,6 +16,8 @@ interface DateRangeFilterProps {
   onStartDateChange: (date: Date | undefined) => void;
   onEndDateChange: (date: Date | undefined) => void;
   onClear: () => void;
+  onApply: () => void;
+  hasChanges?: boolean;
 }
 
 export function DateRangeFilter({
@@ -25,6 +26,8 @@ export function DateRangeFilter({
   onStartDateChange,
   onEndDateChange,
   onClear,
+  onApply,
+  hasChanges = false,
 }: DateRangeFilterProps) {
   const hasFilters = startDate || endDate;
 
@@ -85,6 +88,16 @@ export function DateRangeFilter({
           </PopoverContent>
         </Popover>
       </div>
+
+      <Button 
+        variant={hasChanges ? "default" : "secondary"} 
+        size="sm" 
+        onClick={onApply}
+        className="h-8"
+      >
+        <Filter className="h-4 w-4 mr-1" />
+        Aplicar
+      </Button>
 
       {hasFilters && (
         <Button variant="ghost" size="sm" onClick={onClear} className="h-8 px-2">

@@ -91,12 +91,6 @@ export function SentimentCharts({ data }: SentimentChartsProps) {
 
   return (
     <div className="space-y-6">
-      <AIAnalysisCard 
-        sectionId="sentimento"
-        sectionLabel="Análise de Sentimento"
-        aggregatedData={aggregatedData}
-      />
-
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
       <ChartCard title="Distribuição de Teor" description="Classificação de sentimento das matérias">
         <div className="h-64">
@@ -210,6 +204,12 @@ export function SentimentCharts({ data }: SentimentChartsProps) {
         </div>
       </ChartCard>
       </div>
+
+      <AIAnalysisCard 
+        sectionId="sentimento"
+        sectionLabel="Análise de Sentimento"
+        aggregatedData={aggregatedData}
+      />
     </div>
   );
 }
