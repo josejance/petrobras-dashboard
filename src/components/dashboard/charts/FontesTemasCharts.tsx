@@ -1,5 +1,7 @@
+import { useMemo } from 'react';
 import { Materia } from '@/hooks/useMaterias';
 import { ChartCard } from '../ChartCard';
+import { AIAnalysisCard } from '../AIAnalysisCard';
 import { groupByField, toChartData } from '@/utils/dataTransformers';
 import {
   BarChart,
@@ -43,8 +45,26 @@ export function FontesTemasCharts({ data }: FontesTemasChartsProps) {
     return Object.values(result);
   })();
 
+  // Dados agregados para IA
+  const aggregatedData = useMemo(() => ({
+    topTemas: temaData.map(t => ({ tema: t.name, quantidade: t.value })),
+    topFontes: fonteData.map(f => ({ fonte: f.name, aparicoes: f.value })),
+    destaqueXAvaliacao: destaqueAvaliacaoData.map(d => ({ 
+      destaque: d.name, 
+      positivas: d.Positivas, 
+      negativas: d.Negativas 
+    })),
+  }), [temaData, fonteData, destaqueAvaliacaoData]);
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div className="space-y-6">
+      <AIAnalysisCard 
+        sectionId="fontes_temas"
+        sectionLabel="Fontes e Temas"
+        aggregatedData={aggregatedData}
+      />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <ChartCard title="Top 15 Temas" description="Temas mais frequentes nas matérias">
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
@@ -118,6 +138,7 @@ export function FontesTemasCharts({ data }: FontesTemasChartsProps) {
           </ResponsiveContainer>
         </div>
       </ChartCard>
+      </div>
     </div>
   );
 }

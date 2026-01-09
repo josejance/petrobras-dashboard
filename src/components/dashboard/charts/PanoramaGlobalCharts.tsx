@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Materia } from '@/hooks/useMaterias';
 import { ChartCard } from '@/components/dashboard/ChartCard';
+import { AIAnalysisCard } from '@/components/dashboard/AIAnalysisCard';
 import { parseValue, parseDate, formatCurrency, groupByField, crossAnalysis } from '@/utils/dataTransformers';
 import {
   BarChart,
@@ -210,8 +211,39 @@ export function PanoramaGlobalCharts({ data }: PanoramaGlobalChartsProps) {
     return null;
   };
 
+  // Dados agregados para IA
+  const aggregatedData = useMemo(() => ({
+    periodo: 'Período selecionado no filtro',
+    totalMaterias,
+    mediaVn: mediaVn.toFixed(2),
+    somaVMN: formatCurrency(somaVMN),
+    distribuicaoAvaliacao: avaliacaoData.map(a => ({ tipo: a.name, quantidade: a.value })),
+    topNarrativas: narrativasAvaliacaoData.slice(0, 5).map(n => ({ 
+      tema: n.fullName, 
+      positivas: n.Positiva, 
+      negativas: n.Negativa 
+    })),
+    topVeiculos: veiculosAvaliacaoData.slice(0, 5).map(v => ({ 
+      veiculo: v.fullName, 
+      positivas: v.Positiva, 
+      negativas: v.Negativa 
+    })),
+    distribuicaoAbrangencia: materiasAvaliacaoData.map(m => ({
+      abrangencia: m.name,
+      positivas: m.Positiva,
+      negativas: m.Negativa
+    })),
+  }), [totalMaterias, mediaVn, somaVMN, avaliacaoData, narrativasAvaliacaoData, veiculosAvaliacaoData, materiasAvaliacaoData]);
+
   return (
     <div className="space-y-6">
+      {/* AI Analysis Card */}
+      <AIAnalysisCard 
+        sectionId="panorama"
+        sectionLabel="Panorama Global"
+        aggregatedData={aggregatedData}
+      />
+
       {/* KPIs Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-background border rounded-lg p-6">

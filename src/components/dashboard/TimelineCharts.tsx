@@ -1,5 +1,7 @@
+import { useMemo } from 'react';
 import { Materia } from '@/hooks/useMaterias';
 import { ChartCard } from './ChartCard';
+import { AIAnalysisCard } from './AIAnalysisCard';
 import { groupByMonth, parseValue, formatCompact, parseDate, getSentimentData } from '@/utils/dataTransformers';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -68,8 +70,27 @@ export function TimelineCharts({ data }: TimelineChartsProps) {
   const sentimentData = Object.values(sentimentByMonth)
     .sort((a, b) => a.month.localeCompare(b.month));
 
+  // Dados agregados para IA
+  const aggregatedData = useMemo(() => ({
+    volumePorMes: volumeByMonth.map(v => ({ mes: v.displayMonth, quantidade: v.count })),
+    valorPorMes: valorData.map(v => ({ mes: v.displayMonth, valor: v.valor })),
+    sentimentoPorMes: sentimentData.map(s => ({ 
+      mes: s.displayMonth, 
+      positivas: s.positivas, 
+      negativas: s.negativas,
+      neutras: s.neutras
+    })),
+  }), [volumeByMonth, valorData, sentimentData]);
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+    <div className="space-y-6">
+      <AIAnalysisCard 
+        sectionId="timeline"
+        sectionLabel="Evolução Temporal"
+        aggregatedData={aggregatedData}
+      />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
       <ChartCard title="Volume de Publicações" description="Quantidade de matérias por mês">
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
@@ -185,6 +206,7 @@ export function TimelineCharts({ data }: TimelineChartsProps) {
           </ResponsiveContainer>
         </div>
       </ChartCard>
+      </div>
     </div>
   );
 }
