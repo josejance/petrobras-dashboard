@@ -32,12 +32,6 @@ export function VeiculosCharts({ data }: VeiculosChartsProps) {
 
   return (
     <div className="space-y-6">
-      <AIAnalysisCard 
-        sectionId="veiculos"
-        sectionLabel="Veículos de Mídia"
-        aggregatedData={aggregatedData}
-      />
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <ChartCard title="Top 15 Veículos por Volume" description="Veículos com mais matérias">
         <div className="h-80">
@@ -98,6 +92,12 @@ export function VeiculosCharts({ data }: VeiculosChartsProps) {
         </div>
       </ChartCard>
       </div>
+
+      <AIAnalysisCard 
+        sectionId="veiculos"
+        sectionLabel="Veículos de Mídia"
+        aggregatedData={aggregatedData}
+      />
     </div>
   );
 }

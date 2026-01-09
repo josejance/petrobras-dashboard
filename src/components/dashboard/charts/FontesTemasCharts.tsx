@@ -58,12 +58,6 @@ export function FontesTemasCharts({ data }: FontesTemasChartsProps) {
 
   return (
     <div className="space-y-6">
-      <AIAnalysisCard 
-        sectionId="fontes_temas"
-        sectionLabel="Fontes e Temas"
-        aggregatedData={aggregatedData}
-      />
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <ChartCard title="Top 15 Temas" description="Temas mais frequentes nas matérias">
         <div className="h-80">
@@ -139,6 +133,12 @@ export function FontesTemasCharts({ data }: FontesTemasChartsProps) {
         </div>
       </ChartCard>
       </div>
+
+      <AIAnalysisCard 
+        sectionId="fontes_temas"
+        sectionLabel="Fontes e Temas"
+        aggregatedData={aggregatedData}
+      />
     </div>
   );
 }

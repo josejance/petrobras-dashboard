@@ -237,13 +237,6 @@ export function PanoramaGlobalCharts({ data }: PanoramaGlobalChartsProps) {
 
   return (
     <div className="space-y-6">
-      {/* AI Analysis Card */}
-      <AIAnalysisCard 
-        sectionId="panorama"
-        sectionLabel="Panorama Global"
-        aggregatedData={aggregatedData}
-      />
-
       {/* KPIs Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-background border rounded-lg p-6">
@@ -401,6 +394,13 @@ export function PanoramaGlobalCharts({ data }: PanoramaGlobalChartsProps) {
           </ResponsiveContainer>
         </div>
       </ChartCard>
+
+      {/* AI Analysis Card */}
+      <AIAnalysisCard 
+        sectionId="panorama"
+        sectionLabel="Panorama Global"
+        aggregatedData={aggregatedData}
+      />
     </div>
   );
 }

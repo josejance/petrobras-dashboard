@@ -53,12 +53,6 @@ export function GeografiaCharts({ data }: GeografiaChartsProps) {
 
   return (
     <div className="space-y-6">
-      <AIAnalysisCard 
-        sectionId="geografia"
-        sectionLabel="Distribuição Geográfica"
-        aggregatedData={aggregatedData}
-      />
-
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
       <ChartCard title="Top 15 Estados por Volume" description="Distribuição geográfica por UF">
         <div className="h-80">
@@ -146,6 +140,12 @@ export function GeografiaCharts({ data }: GeografiaChartsProps) {
         </div>
       </ChartCard>
       </div>
+
+      <AIAnalysisCard 
+        sectionId="geografia"
+        sectionLabel="Distribuição Geográfica"
+        aggregatedData={aggregatedData}
+      />
     </div>
   );
 }

@@ -72,12 +72,6 @@ export function MidiaCharts({ data }: MidiaChartsProps) {
 
   return (
     <div className="space-y-6">
-      <AIAnalysisCard 
-        sectionId="midia"
-        sectionLabel="Análise de Mídia"
-        aggregatedData={aggregatedData}
-      />
-
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
       <ChartCard title="Distribuição por Mídia" description="Tipo de veículo de comunicação">
         <div className="h-64">
@@ -191,6 +185,12 @@ export function MidiaCharts({ data }: MidiaChartsProps) {
         </div>
       </ChartCard>
       </div>
+
+      <AIAnalysisCard 
+        sectionId="midia"
+        sectionLabel="Análise de Mídia"
+        aggregatedData={aggregatedData}
+      />
     </div>
   );
 }

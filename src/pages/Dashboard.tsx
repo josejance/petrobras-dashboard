@@ -18,11 +18,21 @@ import { parseDate } from '@/utils/dataTransformers';
 
 export default function Dashboard() {
   const { data: materias, isLoading, error } = useMaterias();
-  const [startDate, setStartDate] = useState<Date | undefined>();
-  const [endDate, setEndDate] = useState<Date | undefined>();
+  
+  // Datas pendentes (selecionadas mas não aplicadas)
+  const [pendingStartDate, setPendingStartDate] = useState<Date | undefined>();
+  const [pendingEndDate, setPendingEndDate] = useState<Date | undefined>();
+  
+  // Datas aplicadas (usadas para filtrar)
+  const [appliedStartDate, setAppliedStartDate] = useState<Date | undefined>();
+  const [appliedEndDate, setAppliedEndDate] = useState<Date | undefined>();
+  
   const [activeSection, setActiveSection] = useState('kpis');
   
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
+
+  // Verifica se há mudanças pendentes
+  const hasChanges = pendingStartDate !== appliedStartDate || pendingEndDate !== appliedEndDate;
 
   const filteredMaterias = useMemo(() => {
     if (!materias) return [];
@@ -31,16 +41,23 @@ export default function Dashboard() {
       const itemDate = parseDate(item.Data);
       if (!itemDate) return true;
       
-      if (startDate && itemDate < startDate) return false;
-      if (endDate && itemDate > endDate) return false;
+      if (appliedStartDate && itemDate < appliedStartDate) return false;
+      if (appliedEndDate && itemDate > appliedEndDate) return false;
       
       return true;
     });
-  }, [materias, startDate, endDate]);
+  }, [materias, appliedStartDate, appliedEndDate]);
+
+  const handleApplyFilters = () => {
+    setAppliedStartDate(pendingStartDate);
+    setAppliedEndDate(pendingEndDate);
+  };
 
   const handleClearFilters = () => {
-    setStartDate(undefined);
-    setEndDate(undefined);
+    setPendingStartDate(undefined);
+    setPendingEndDate(undefined);
+    setAppliedStartDate(undefined);
+    setAppliedEndDate(undefined);
   };
 
   const handleNavigate = useCallback((sectionId: string) => {
@@ -126,7 +143,7 @@ export default function Dashboard() {
     );
   }
 
-  const isFiltered = startDate || endDate;
+  const isFiltered = appliedStartDate || appliedEndDate;
 
   return (
     <div className="min-h-screen bg-background">
@@ -149,11 +166,13 @@ export default function Dashboard() {
             </div>
             
             <DateRangeFilter
-              startDate={startDate}
-              endDate={endDate}
-              onStartDateChange={setStartDate}
-              onEndDateChange={setEndDate}
+              startDate={pendingStartDate}
+              endDate={pendingEndDate}
+              onStartDateChange={setPendingStartDate}
+              onEndDateChange={setPendingEndDate}
               onClear={handleClearFilters}
+              onApply={handleApplyFilters}
+              hasChanges={hasChanges}
             />
           </div>
         </header>
