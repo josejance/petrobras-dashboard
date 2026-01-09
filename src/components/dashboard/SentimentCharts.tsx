@@ -1,5 +1,7 @@
+import { useMemo } from 'react';
 import { Materia } from '@/hooks/useMaterias';
 import { ChartCard } from './ChartCard';
+import { AIAnalysisCard } from './AIAnalysisCard';
 import { groupByField, toChartData, parseDate } from '@/utils/dataTransformers';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -35,8 +37,9 @@ const SENTIMENT_COLORS: Record<string, string> = {
 export function SentimentCharts({ data }: SentimentChartsProps) {
   // Teor distribution
   const teorData = toChartData(groupByField(data, 'Teor')).map(item => ({
-    ...item,
-    color: SENTIMENT_COLORS[item.name] || SENTIMENT_COLORS['Não informado'],
+    name: item.name as string,
+    value: item.value as number,
+    color: SENTIMENT_COLORS[item.name as string] || SENTIMENT_COLORS['Não informado'],
   }));
 
   // Calculate overall sentiment gauge
@@ -76,8 +79,25 @@ export function SentimentCharts({ data }: SentimentChartsProps) {
   // Avaliação distribution
   const avaliacaoData = toChartData(groupByField(data, 'Avaliação'));
 
+  // Dados agregados para IA
+  const aggregatedData = useMemo(() => ({
+    distribuicaoTeor: teorData.map(t => ({ tipo: t.name, quantidade: t.value })),
+    percentualPositivo: percentPositivo.toFixed(1),
+    percentualNegativo: percentNegativo.toFixed(1),
+    totalPositivas: positivas,
+    totalNegativas: negativas,
+    tendenciaK: kTrendData.map(k => ({ mes: k.displayMonth, mediaK: k.mediaK.toFixed(2) })),
+  }), [teorData, percentPositivo, percentNegativo, positivas, negativas, kTrendData]);
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+    <div className="space-y-6">
+      <AIAnalysisCard 
+        sectionId="sentimento"
+        sectionLabel="Análise de Sentimento"
+        aggregatedData={aggregatedData}
+      />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
       <ChartCard title="Distribuição de Teor" description="Classificação de sentimento das matérias">
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
@@ -189,6 +209,7 @@ export function SentimentCharts({ data }: SentimentChartsProps) {
           </ResponsiveContainer>
         </div>
       </ChartCard>
+      </div>
     </div>
   );
 }

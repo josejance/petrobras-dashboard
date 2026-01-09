@@ -1,6 +1,8 @@
+import { useMemo } from 'react';
 import { Materia } from '@/hooks/useMaterias';
 import { ChartCard } from '../ChartCard';
-import { groupByField, groupByFieldSum, toChartData, formatCompact } from '@/utils/dataTransformers';
+import { AIAnalysisCard } from '../AIAnalysisCard';
+import { groupByField, groupByFieldSum, toChartData, formatCompact, formatCurrency } from '@/utils/dataTransformers';
 import {
   BarChart,
   Bar,
@@ -36,8 +38,28 @@ export function GeografiaCharts({ data }: GeografiaChartsProps) {
   const ufValorData = toChartData(groupByFieldSum(data, 'uf', 'Valor')).slice(0, 10);
   const abrangenciaValorData = toChartData(groupByFieldSum(data, 'Abrangência', 'Valor'));
 
+  // Dados agregados para IA
+  const aggregatedData = useMemo(() => ({
+    topEstadosPorVolume: ufData.map(u => ({ uf: u.name, quantidade: u.value })),
+    topEstadosPorValor: ufValorData.map(u => ({ 
+      uf: u.name, 
+      valor: formatCurrency(u.value as number) 
+    })),
+    abrangenciaXValor: abrangenciaValorData.map(a => ({ 
+      abrangencia: a.name, 
+      valor: formatCurrency(a.value as number) 
+    })),
+  }), [ufData, ufValorData, abrangenciaValorData]);
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+    <div className="space-y-6">
+      <AIAnalysisCard 
+        sectionId="geografia"
+        sectionLabel="Distribuição Geográfica"
+        aggregatedData={aggregatedData}
+      />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
       <ChartCard title="Top 15 Estados por Volume" description="Distribuição geográfica por UF">
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
@@ -123,6 +145,7 @@ export function GeografiaCharts({ data }: GeografiaChartsProps) {
           </ResponsiveContainer>
         </div>
       </ChartCard>
+      </div>
     </div>
   );
 }

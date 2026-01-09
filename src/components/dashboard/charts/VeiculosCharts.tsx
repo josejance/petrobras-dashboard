@@ -1,6 +1,8 @@
+import { useMemo } from 'react';
 import { Materia } from '@/hooks/useMaterias';
 import { ChartCard } from '../ChartCard';
-import { groupByField, groupByFieldSum, toChartData, formatCompact } from '@/utils/dataTransformers';
+import { AIAnalysisCard } from '../AIAnalysisCard';
+import { groupByField, groupByFieldSum, toChartData, formatCompact, formatCurrency } from '@/utils/dataTransformers';
 import {
   BarChart,
   Bar,
@@ -19,8 +21,24 @@ export function VeiculosCharts({ data }: VeiculosChartsProps) {
   const veiculoData = toChartData(groupByField(data, 'Veiculo')).slice(0, 15);
   const veiculoValorData = toChartData(groupByFieldSum(data, 'Veiculo', 'Valor')).slice(0, 15);
 
+  // Dados agregados para IA
+  const aggregatedData = useMemo(() => ({
+    topVeiculosPorVolume: veiculoData.map(v => ({ veiculo: v.name, quantidade: v.value })),
+    topVeiculosPorValor: veiculoValorData.map(v => ({ 
+      veiculo: v.name, 
+      valor: formatCurrency(v.value as number) 
+    })),
+  }), [veiculoData, veiculoValorData]);
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div className="space-y-6">
+      <AIAnalysisCard 
+        sectionId="veiculos"
+        sectionLabel="Veículos de Mídia"
+        aggregatedData={aggregatedData}
+      />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <ChartCard title="Top 15 Veículos por Volume" description="Veículos com mais matérias">
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
@@ -79,6 +97,7 @@ export function VeiculosCharts({ data }: VeiculosChartsProps) {
           </ResponsiveContainer>
         </div>
       </ChartCard>
+      </div>
     </div>
   );
 }
