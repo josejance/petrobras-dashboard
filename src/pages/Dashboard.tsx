@@ -10,6 +10,7 @@ import { MidiaCharts } from '@/components/dashboard/charts/MidiaCharts';
 import { VeiculosCharts } from '@/components/dashboard/charts/VeiculosCharts';
 import { GeografiaCharts } from '@/components/dashboard/charts/GeografiaCharts';
 import { FontesTemasCharts } from '@/components/dashboard/charts/FontesTemasCharts';
+import { PanoramaGlobalCharts } from '@/components/dashboard/charts/PanoramaGlobalCharts';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -159,6 +160,15 @@ export default function Dashboard() {
 
         {/* Content */}
         <main className="max-w-7xl mx-auto p-6 space-y-12">
+          <DashboardSection
+            ref={(el) => { sectionRefs.current['panorama'] = el; }}
+            id="panorama"
+            title="Panorama Global"
+            description="Visão consolidada de matérias, valoração e sentimento"
+          >
+            <PanoramaGlobalCharts data={filteredMaterias} />
+          </DashboardSection>
+
           <DashboardSection
             ref={(el) => { sectionRefs.current['kpis'] = el; }}
             id="kpis"
