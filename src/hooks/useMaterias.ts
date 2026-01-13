@@ -9,8 +9,9 @@ export interface Materia {
   Mídia: string;
   Veiculo: string;
   Valor: string;
-  publico: number;
-  K: number;
+  publico: string | number;
+  K: number | null;
+  Vn: string | number | null;
   Teor: string;
   Avaliação: string;
   Abrangência: string;
@@ -18,7 +19,7 @@ export interface Materia {
   Temas: string;
   Fonte: string;
   Destaque: string;
-  VMN: string;
+  VMN: string | number | null;
   [key: string]: unknown;
 }
 

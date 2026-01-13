@@ -47,13 +47,21 @@ export function PanoramaGlobalCharts({ data }: PanoramaGlobalChartsProps) {
   const totalMaterias = data.length;
   
   const mediaVn = useMemo(() => {
-    const validK = data.filter(item => item.K !== null && item.K !== undefined);
-    if (validK.length === 0) return 0;
-    return validK.reduce((sum, item) => sum + (item.K || 0), 0) / validK.length;
+    // Campo Vn (com n minúsculo) contém a valoração
+    const validItems = data.filter(item => {
+      const vn = item['Vn'] as string | number | null | undefined;
+      return vn !== null && vn !== undefined && vn !== '';
+    });
+    if (validItems.length === 0) return 0;
+    const sum = validItems.reduce((acc, item) => {
+      const vn = item['Vn'] as string | number | null | undefined;
+      return acc + parseValue(vn);
+    }, 0);
+    return sum / validItems.length;
   }, [data]);
 
   const somaVMN = useMemo(() => {
-    return data.reduce((sum, item) => sum + parseValue(item.VMN || '0'), 0);
+    return data.reduce((sum, item) => sum + parseValue(item.VMN), 0);
   }, [data]);
 
   // Avaliação (Sentimento) - Pizza
