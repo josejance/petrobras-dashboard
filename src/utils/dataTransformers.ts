@@ -9,7 +9,7 @@ export function parseDate(dateStr: string): Date | null {
   return isValid(parsed) ? parsed : null;
 }
 
-// Parse Brazilian currency format "1.234.567,89" to number
+// Parse value to number - handles both American (1234.56) and Brazilian (1.234,56) formats
 // Also handles number inputs and null/undefined values
 export function parseValue(valueStr: string | number | null | undefined): number {
   if (valueStr === null || valueStr === undefined) return 0;
@@ -18,9 +18,22 @@ export function parseValue(valueStr: string | number | null | undefined): number
   }
   if (typeof valueStr !== 'string') return 0;
   if (valueStr.trim() === '') return 0;
-  const cleaned = valueStr
-    .replace(/\./g, '')
-    .replace(',', '.');
+  
+  // Detect format: if has comma as last separator, it's Brazilian format
+  // Examples: "1.234,56" (BR) vs "1234.56" (US) vs "1,234.56" (US with thousands)
+  const lastComma = valueStr.lastIndexOf(',');
+  const lastDot = valueStr.lastIndexOf('.');
+  
+  let cleaned: string;
+  
+  if (lastComma > lastDot) {
+    // Brazilian format: 1.234,56 -> remove dots, replace comma with dot
+    cleaned = valueStr.replace(/\./g, '').replace(',', '.');
+  } else {
+    // American format: 1,234.56 or 1234.56 -> just remove commas
+    cleaned = valueStr.replace(/,/g, '');
+  }
+  
   const result = parseFloat(cleaned);
   return isNaN(result) ? 0 : result;
 }
