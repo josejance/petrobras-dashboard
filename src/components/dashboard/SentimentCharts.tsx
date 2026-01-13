@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Materia } from '@/hooks/useMaterias';
 import { ChartCard } from './ChartCard';
 import { AIAnalysisCard } from './AIAnalysisCard';
-import { groupByField, toChartData, parseDate } from '@/utils/dataTransformers';
+import { groupByField, toChartData, parseDate, parseValue } from '@/utils/dataTransformers';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
@@ -53,27 +53,30 @@ export function SentimentCharts({ data }: SentimentChartsProps) {
   const percentPositivo = total > 0 ? (positivas / total) * 100 : 0;
   const percentNegativo = total > 0 ? (negativas / total) * 100 : 0;
 
-  // K index by month
-  const kByMonth = data.reduce((acc, item) => {
+  // Vn index by month (usando coluna Vn em vez de K)
+  const vnByMonth = data.reduce((acc, item) => {
     const date = parseDate(item.Data);
     if (!date) return acc;
     
     const key = format(date, 'yyyy-MM');
     const displayMonth = format(date, 'MMM/yy', { locale: ptBR });
+    const vnValue = parseValue(item.Vn);
     
     if (!acc[key]) {
-      acc[key] = { month: key, displayMonth, totalK: 0, count: 0 };
+      acc[key] = { month: key, displayMonth, totalVn: 0, count: 0 };
     }
-    acc[key].totalK += item.K || 0;
-    acc[key].count += 1;
+    if (item.Vn !== null && item.Vn !== undefined && item.Vn !== '') {
+      acc[key].totalVn += vnValue;
+      acc[key].count += 1;
+    }
     return acc;
-  }, {} as Record<string, { month: string; displayMonth: string; totalK: number; count: number }>);
+  }, {} as Record<string, { month: string; displayMonth: string; totalVn: number; count: number }>);
 
-  const kTrendData = Object.values(kByMonth)
+  const vnTrendData = Object.values(vnByMonth)
     .sort((a, b) => a.month.localeCompare(b.month))
     .map(item => ({
       displayMonth: item.displayMonth,
-      mediaK: item.count > 0 ? item.totalK / item.count : 0,
+      mediaVn: item.count > 0 ? item.totalVn / item.count : 0,
     }));
 
   // Avaliação distribution
@@ -86,8 +89,8 @@ export function SentimentCharts({ data }: SentimentChartsProps) {
     percentualNegativo: percentNegativo.toFixed(1),
     totalPositivas: positivas,
     totalNegativas: negativas,
-    tendenciaK: kTrendData.map(k => ({ mes: k.displayMonth, mediaK: k.mediaK.toFixed(2) })),
-  }), [teorData, percentPositivo, percentNegativo, positivas, negativas, kTrendData]);
+    tendenciaVn: vnTrendData.map(v => ({ mes: v.displayMonth, mediaVn: v.mediaVn.toFixed(2) })),
+  }), [teorData, percentPositivo, percentNegativo, positivas, negativas, vnTrendData]);
 
   return (
     <div className="space-y-6">
@@ -171,10 +174,10 @@ export function SentimentCharts({ data }: SentimentChartsProps) {
         </div>
       </ChartCard>
 
-      <ChartCard title="Tendência do Índice K" description="Evolução média do índice K por mês">
+      <ChartCard title="Tendência do Índice Vn" description="Evolução média do índice Vn por mês">
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={kTrendData}>
+            <LineChart data={vnTrendData}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
               <XAxis 
                 dataKey="displayMonth" 
@@ -185,7 +188,7 @@ export function SentimentCharts({ data }: SentimentChartsProps) {
                 domain={['auto', 'auto']}
               />
               <Tooltip 
-                formatter={(value: number) => [value.toFixed(2), 'Média K']}
+                formatter={(value: number) => [value.toFixed(2), 'Média Vn']}
                 contentStyle={{ 
                   backgroundColor: 'hsl(var(--background))',
                   border: '1px solid hsl(var(--border))',
@@ -194,7 +197,7 @@ export function SentimentCharts({ data }: SentimentChartsProps) {
               />
               <Line
                 type="monotone"
-                dataKey="mediaK"
+                dataKey="mediaVn"
                 stroke="hsl(262, 83%, 58%)"
                 strokeWidth={2}
                 dot={{ fill: 'hsl(262, 83%, 58%)', r: 4 }}

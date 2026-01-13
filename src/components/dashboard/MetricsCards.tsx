@@ -25,10 +25,10 @@ export function MetricsCards({ data }: MetricsCardsProps) {
   }, 0);
   
   const positivas = data.filter(item => 
-    item.Teor?.includes('Positiva') || item.K > 0
+    item.Teor?.includes('Positiva')
   ).length;
   const negativas = data.filter(item => 
-    item.Teor?.includes('Negativa') || item.K < 0
+    item.Teor?.includes('Negativa')
   ).length;
   const saldo = positivas - negativas;
 
