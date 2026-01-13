@@ -10,20 +10,28 @@ export function parseDate(dateStr: string): Date | null {
 }
 
 // Parse Brazilian currency format "1.234.567,89" to number
-export function parseValue(valueStr: string): number {
-  if (!valueStr) return 0;
+// Also handles number inputs and null/undefined values
+export function parseValue(valueStr: string | number | null | undefined): number {
+  if (valueStr === null || valueStr === undefined) return 0;
+  if (typeof valueStr === 'number') {
+    return isNaN(valueStr) ? 0 : valueStr;
+  }
+  if (typeof valueStr !== 'string') return 0;
+  if (valueStr.trim() === '') return 0;
   const cleaned = valueStr
     .replace(/\./g, '')
     .replace(',', '.');
-  return parseFloat(cleaned) || 0;
+  const result = parseFloat(cleaned);
+  return isNaN(result) ? 0 : result;
 }
 
 // Format number as Brazilian currency
-export function formatCurrency(value: number): string {
+export function formatCurrency(value: number | null | undefined): string {
+  const num = typeof value === 'number' && !isNaN(value) ? value : 0;
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
-  }).format(value);
+  }).format(num);
 }
 
 // Format large numbers compactly
