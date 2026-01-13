@@ -21,7 +21,7 @@ export function MetricsCards({ data }: MetricsCardsProps) {
   }, 0);
   
   const totalPublico = data.reduce((sum, item) => {
-    return sum + (item.publico || 0);
+    return sum + parseValue(item.publico);
   }, 0);
   
   const positivas = data.filter(item => 
