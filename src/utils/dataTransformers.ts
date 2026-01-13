@@ -28,16 +28,17 @@ export function formatCurrency(value: number): string {
 
 // Format large numbers compactly
 export function formatCompact(value: number): string {
-  if (value >= 1_000_000_000) {
-    return `${(value / 1_000_000_000).toFixed(1)}B`;
+  const num = typeof value === 'number' && !isNaN(value) ? value : 0;
+  if (num >= 1_000_000_000) {
+    return `${(num / 1_000_000_000).toFixed(1)}B`;
   }
-  if (value >= 1_000_000) {
-    return `${(value / 1_000_000).toFixed(1)}M`;
+  if (num >= 1_000_000) {
+    return `${(num / 1_000_000).toFixed(1)}M`;
   }
-  if (value >= 1_000) {
-    return `${(value / 1_000).toFixed(1)}K`;
+  if (num >= 1_000) {
+    return `${(num / 1_000).toFixed(1)}K`;
   }
-  return value.toFixed(0);
+  return num.toFixed(0);
 }
 
 // Group data by a field and count

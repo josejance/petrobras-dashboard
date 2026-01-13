@@ -215,7 +215,7 @@ export function PanoramaGlobalCharts({ data }: PanoramaGlobalChartsProps) {
   const aggregatedData = useMemo(() => ({
     periodo: 'Período selecionado no filtro',
     totalMaterias,
-    mediaVn: mediaVn.toFixed(2),
+    mediaVn: (typeof mediaVn === 'number' && !isNaN(mediaVn) ? mediaVn : 0).toFixed(2),
     somaVMN: formatCurrency(somaVMN),
     distribuicaoAvaliacao: avaliacaoData.map(a => ({ tipo: a.name, quantidade: a.value })),
     topNarrativas: narrativasAvaliacaoData.slice(0, 5).map(n => ({ 
@@ -248,7 +248,7 @@ export function PanoramaGlobalCharts({ data }: PanoramaGlobalChartsProps) {
         <div className="bg-background border rounded-lg p-6">
           <p className="text-sm text-muted-foreground mb-1">Média Vn</p>
           <p className="text-4xl font-bold text-foreground">
-            {mediaVn.toFixed(2)}
+            {(typeof mediaVn === 'number' && !isNaN(mediaVn) ? mediaVn : 0).toFixed(2)}
           </p>
         </div>
         <div className="bg-background border rounded-lg p-6">
