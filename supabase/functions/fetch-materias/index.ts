@@ -20,19 +20,41 @@ Deno.serve(async (req) => {
 
     const externalSupabase = createClient(externalUrl, externalKey)
 
-    // Fetch all data without limit
-    const { data, error, count } = await externalSupabase
+    // First, get the total count
+    const { count, error: countError } = await externalSupabase
       .from('materias')
-      .select('*', { count: 'exact' })
+      .select('*', { count: 'exact', head: true })
 
-    if (error) {
-      throw error
+    if (countError) {
+      throw countError
     }
+
+    const totalCount = count || 0
+    const pageSize = 1000
+    const allData: any[] = []
+
+    // Fetch all data using pagination to bypass the 1000 row limit
+    for (let offset = 0; offset < totalCount; offset += pageSize) {
+      const { data: pageData, error: pageError } = await externalSupabase
+        .from('materias')
+        .select('*')
+        .range(offset, offset + pageSize - 1)
+
+      if (pageError) {
+        throw pageError
+      }
+
+      if (pageData) {
+        allData.push(...pageData)
+      }
+    }
+
+    console.log(`Fetched ${allData.length} records out of ${totalCount} total`)
 
     return new Response(
       JSON.stringify({ 
-        data,
-        total: count || data?.length || 0
+        data: allData,
+        total: totalCount
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
