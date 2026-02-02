@@ -1,6 +1,7 @@
+import { useState, useMemo } from 'react';
 import { Materia } from '@/hooks/useMaterias';
 import { ChartCard } from './ChartCard';
-import { groupByMonth, parseValue, formatCompact, parseDate } from '@/utils/dataTransformers';
+import { parseValue, parseDate } from '@/utils/dataTransformers';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
@@ -11,79 +12,158 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  LineChart,
-  Line,
 } from 'recharts';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface TimelineChartsProps {
   data: Materia[];
 }
 
+type Granularidade = 'dia' | 'mes';
+type Metrica = 'volume' | 'vn_medio' | 'vmn_medio';
+
+const metricaLabels: Record<Metrica, string> = {
+  volume: 'Volume de Publicações',
+  vn_medio: 'VN Médio Diário',
+  vmn_medio: 'VMN Médio Diário',
+};
+
+const metricaDescriptions: Record<Metrica, string> = {
+  volume: 'Quantidade de matérias',
+  vn_medio: 'Média diária de Valoração',
+  vmn_medio: 'Média diária de Valor de Mídia Nominal',
+};
+
 export function TimelineCharts({ data }: TimelineChartsProps) {
-  // Volume by month
-  const volumeByMonth = groupByMonth(data);
+  const [granularidade, setGranularidade] = useState<Granularidade>('mes');
+  const [metrica, setMetrica] = useState<Metrica>('volume');
 
-  // Valor by month
-  const valorByMonth = data.reduce((acc, item) => {
-    const date = parseDate(item.Data);
-    if (!date) return acc;
-    
-    const key = format(date, 'yyyy-MM');
-    const displayMonth = format(date, 'MMM/yy', { locale: ptBR });
-    
-    if (!acc[key]) {
-      acc[key] = { month: key, displayMonth, valor: 0 };
+  const chartData = useMemo(() => {
+    const grouped = data.reduce((acc, item) => {
+      const date = parseDate(item.Data);
+      if (!date) return acc;
+
+      const key = granularidade === 'dia' 
+        ? format(date, 'yyyy-MM-dd')
+        : format(date, 'yyyy-MM');
+      
+      const displayLabel = granularidade === 'dia'
+        ? format(date, 'dd/MM/yy', { locale: ptBR })
+        : format(date, 'MMM/yy', { locale: ptBR });
+
+      if (!acc[key]) {
+        acc[key] = { 
+          key, 
+          displayLabel, 
+          count: 0, 
+          vnTotal: 0, 
+          vmnTotal: 0,
+          dias: new Set<string>()
+        };
+      }
+
+      acc[key].count += 1;
+      acc[key].vnTotal += parseValue(item.Vn);
+      acc[key].vmnTotal += parseValue(item.VMN);
+      acc[key].dias.add(format(date, 'yyyy-MM-dd'));
+
+      return acc;
+    }, {} as Record<string, { 
+      key: string; 
+      displayLabel: string; 
+      count: number; 
+      vnTotal: number; 
+      vmnTotal: number;
+      dias: Set<string>;
+    }>);
+
+    return Object.values(grouped)
+      .map(item => ({
+        key: item.key,
+        displayLabel: item.displayLabel,
+        value: metrica === 'volume' 
+          ? item.count 
+          : metrica === 'vn_medio'
+            ? item.vnTotal / (item.dias.size || 1)
+            : item.vmnTotal / (item.dias.size || 1),
+      }))
+      .sort((a, b) => a.key.localeCompare(b.key));
+  }, [data, granularidade, metrica]);
+
+  const formatValue = (value: number) => {
+    if (metrica === 'volume') {
+      return value.toLocaleString('pt-BR');
     }
-    acc[key].valor += parseValue(item.Valor);
-    return acc;
-  }, {} as Record<string, { month: string; displayMonth: string; valor: number }>);
+    return new Intl.NumberFormat('pt-BR', { 
+      style: 'currency', 
+      currency: 'BRL',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
 
-  const valorData = Object.values(valorByMonth)
-    .sort((a, b) => a.month.localeCompare(b.month));
-
-  // Sentiment by month
-  const sentimentByMonth = data.reduce((acc, item) => {
-    const date = parseDate(item.Data);
-    if (!date) return acc;
-    
-    const key = format(date, 'yyyy-MM');
-    const displayMonth = format(date, 'MMM/yy', { locale: ptBR });
-    
-    if (!acc[key]) {
-      acc[key] = { month: key, displayMonth, positivas: 0, negativas: 0, neutras: 0 };
-    }
-    
-    const teor = item.Teor || '';
-    if (teor.includes('Positiva')) {
-      acc[key].positivas += 1;
-    } else if (teor.includes('Negativa')) {
-      acc[key].negativas += 1;
-    } else {
-      acc[key].neutras += 1;
-    }
-    
-    return acc;
-  }, {} as Record<string, { month: string; displayMonth: string; positivas: number; negativas: number; neutras: number }>);
-
-  const sentimentData = Object.values(sentimentByMonth)
-    .sort((a, b) => a.month.localeCompare(b.month));
+  const tooltipLabel = metrica === 'volume' ? 'Matérias' : metrica === 'vn_medio' ? 'VN Médio' : 'VMN Médio';
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-      <ChartCard title="Volume de Publicações" description="Quantidade de matérias por mês">
-        <div className="h-64">
+      <ChartCard 
+        title="Evolução Temporal" 
+        description={`${metricaDescriptions[metrica]} por ${granularidade === 'dia' ? 'dia' : 'mês'}`}
+      >
+        <div className="flex flex-wrap gap-4 mb-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Período:</span>
+            <Select value={granularidade} onValueChange={(v) => setGranularidade(v as Granularidade)}>
+              <SelectTrigger className="w-[120px] h-9 bg-background">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-background z-50">
+                <SelectItem value="dia">Por Dia</SelectItem>
+                <SelectItem value="mes">Por Mês</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Métrica:</span>
+            <Select value={metrica} onValueChange={(v) => setMetrica(v as Metrica)}>
+              <SelectTrigger className="w-[200px] h-9 bg-background">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-background z-50">
+                <SelectItem value="volume">Volume de Publicações</SelectItem>
+                <SelectItem value="vn_medio">VN Médio Diário</SelectItem>
+                <SelectItem value="vmn_medio">VMN Médio Diário</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={volumeByMonth}>
+            <AreaChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
               <XAxis 
-                dataKey="displayMonth" 
+                dataKey="displayLabel" 
                 tick={{ fontSize: 11 }}
                 className="text-muted-foreground"
+                interval={granularidade === 'dia' ? 'preserveStartEnd' : 0}
+                angle={granularidade === 'dia' ? -45 : 0}
+                textAnchor={granularidade === 'dia' ? 'end' : 'middle'}
+                height={granularidade === 'dia' ? 60 : 30}
               />
-              <YAxis tick={{ fontSize: 11 }} />
+              <YAxis 
+                tick={{ fontSize: 11 }}
+                tickFormatter={(value) => formatValue(value)}
+              />
               <Tooltip 
-                formatter={(value: number) => [value, 'Matérias']}
+                formatter={(value: number) => [formatValue(value), tooltipLabel]}
                 contentStyle={{ 
                   backgroundColor: 'hsl(var(--background))',
                   border: '1px solid hsl(var(--border))',
@@ -92,7 +172,7 @@ export function TimelineCharts({ data }: TimelineChartsProps) {
               />
               <Area
                 type="monotone"
-                dataKey="count"
+                dataKey="value"
                 stroke="hsl(221, 83%, 53%)"
                 fill="hsl(221, 83%, 53%)"
                 fillOpacity={0.3}
@@ -101,92 +181,6 @@ export function TimelineCharts({ data }: TimelineChartsProps) {
           </ResponsiveContainer>
         </div>
       </ChartCard>
-
-      <ChartCard title="Evolução do Valor de Mídia" description="Soma do valor de mídia por mês">
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={valorData}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis 
-                dataKey="displayMonth" 
-                tick={{ fontSize: 11 }}
-              />
-              <YAxis 
-                tick={{ fontSize: 11 }}
-                tickFormatter={(value) => formatCompact(value)}
-              />
-              <Tooltip 
-                formatter={(value: number) => [
-                  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value),
-                  'Valor'
-                ]}
-                contentStyle={{ 
-                  backgroundColor: 'hsl(var(--background))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px'
-                }}
-              />
-              <Line
-                type="monotone"
-                dataKey="valor"
-                stroke="hsl(142, 71%, 45%)"
-                strokeWidth={2}
-                dot={{ fill: 'hsl(142, 71%, 45%)', r: 3 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </ChartCard>
-
-      <ChartCard title="Evolução do Sentimento" description="Matérias positivas vs negativas por mês">
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={sentimentData}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis 
-                dataKey="displayMonth" 
-                tick={{ fontSize: 11 }}
-              />
-              <YAxis tick={{ fontSize: 11 }} />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'hsl(var(--background))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px'
-                }}
-              />
-              <Area
-                type="monotone"
-                dataKey="positivas"
-                stackId="1"
-                stroke="hsl(142, 71%, 45%)"
-                fill="hsl(142, 71%, 45%)"
-                fillOpacity={0.6}
-                name="Positivas"
-              />
-              <Area
-                type="monotone"
-                dataKey="neutras"
-                stackId="1"
-                stroke="hsl(220, 9%, 46%)"
-                fill="hsl(220, 9%, 46%)"
-                fillOpacity={0.6}
-                name="Neutras"
-              />
-              <Area
-                type="monotone"
-                dataKey="negativas"
-                stackId="1"
-                stroke="hsl(0, 84%, 60%)"
-                fill="hsl(0, 84%, 60%)"
-                fillOpacity={0.6}
-                name="Negativas"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-      </ChartCard>
-      </div>
     </div>
   );
 }
