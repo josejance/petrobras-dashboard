@@ -69,14 +69,14 @@ export function GeografiaCharts({ data }: GeografiaChartsProps) {
       <ChartCard title="Top 15 Estados por Volume" description="Distribuição geográfica por UF">
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={ufData} layout="vertical" margin={{ left: 50 }}>
+            <BarChart data={ufData} layout="vertical" margin={{ left: 120 }}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
               <XAxis type="number" tick={{ fontSize: 11 }} />
               <YAxis 
                 type="category" 
                 dataKey="name" 
-                tick={{ fontSize: 11 }}
-                width={45}
+                tick={{ fontSize: 10 }}
+                width={115}
               />
               <Tooltip 
                 formatter={(value: number) => [value, 'Matérias']}
