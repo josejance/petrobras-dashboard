@@ -14,10 +14,10 @@ export function FontesTemasCharts({ data }: FontesTemasChartsProps) {
   const [chartType2, setChartType2] = useState<ChartType>('barHorizontal');
   const [chartType3, setChartType3] = useState<ChartType>('stacked');
 
-  const temaData = toChartData(groupByField(data, 'Temas')).slice(0, 15);
+  const temaData = toChartData(groupByField(data, 'Temas')).slice(0, 10);
   const fonteData = toChartData(groupByField(data, 'Fonte'))
     .filter(item => item.name !== 'Não informado' && item.name !== '')
-    .slice(0, 15);
+    .slice(0, 10);
 
   // Destaque x Avaliação
   const destaqueAvaliacaoData = (() => {
@@ -47,35 +47,37 @@ export function FontesTemasCharts({ data }: FontesTemasChartsProps) {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <ChartCard 
-          title="Top 15 Temas" 
-          description="Temas mais frequentes nas matérias"
-          headerContent={<ChartTypeSelector value={chartType1} onChange={setChartType1} />}
-        >
-          <FlexibleChart
-            data={temaData}
-            type={chartType1}
-            height={320}
-            color="hsl(262, 83%, 58%)"
-            tooltipLabel="Matérias"
-          />
-        </ChartCard>
+      <ChartCard 
+        title="Top 10 Temas" 
+        description="Temas mais frequentes nas matérias"
+        headerContent={<ChartTypeSelector value={chartType1} onChange={setChartType1} />}
+      >
+        <FlexibleChart
+          data={temaData}
+          type={chartType1}
+          height={360}
+          color="hsl(262, 83%, 58%)"
+          tooltipLabel="Matérias"
+          leftMargin={200}
+          yAxisWidth={190}
+        />
+      </ChartCard>
 
-        <ChartCard 
-          title="Top 15 Fontes" 
-          description="Fontes mais citadas nas matérias"
-          headerContent={<ChartTypeSelector value={chartType2} onChange={setChartType2} />}
-        >
-          <FlexibleChart
-            data={fonteData}
-            type={chartType2}
-            height={320}
-            color="hsl(24, 95%, 53%)"
-            tooltipLabel="Aparições"
-          />
-        </ChartCard>
-      </div>
+      <ChartCard 
+        title="Top 10 Fontes" 
+        description="Fontes mais citadas nas matérias"
+        headerContent={<ChartTypeSelector value={chartType2} onChange={setChartType2} />}
+      >
+        <FlexibleChart
+          data={fonteData}
+          type={chartType2}
+          height={360}
+          color="hsl(24, 95%, 53%)"
+          tooltipLabel="Aparições"
+          leftMargin={200}
+          yAxisWidth={190}
+        />
+      </ChartCard>
 
       <ChartCard 
         title="Destaque x Avaliação" 
