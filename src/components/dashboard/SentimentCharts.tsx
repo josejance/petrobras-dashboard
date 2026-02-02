@@ -32,24 +32,24 @@ const SENTIMENT_COLORS: Record<string, string> = {
 };
 
 export function SentimentCharts({ data }: SentimentChartsProps) {
-  const [chartTypeTeor, setChartTypeTeor] = useState<ChartType>('pie');
+  const [chartTypeAvaliacao, setChartTypeAvaliacao] = useState<ChartType>('pie');
   const [chartTypeTendencia, setChartTypeTendencia] = useState<ChartType>('area');
 
-  // Teor distribution
-  const teorData = toChartData(groupByField(data, 'Teor')).map(item => ({
+  // Avaliação distribution (usando coluna Avaliação)
+  const avaliacaoData = toChartData(groupByField(data, 'Avaliação')).map(item => ({
     name: item.name,
     value: item.value,
     color: SENTIMENT_COLORS[item.name] || SENTIMENT_COLORS['Não informado'],
   }));
 
-  const teorColors = teorData.map(d => d.color);
+  const avaliacaoColors = avaliacaoData.map(d => d.color);
 
-  // Calculate overall sentiment gauge
+  // Calculate overall sentiment gauge (usando coluna Avaliação)
   const positivas = data.filter(item => 
-    item.Teor?.includes('Positiva')
+    item.Avaliação?.toLowerCase().includes('positiva')
   ).length;
   const negativas = data.filter(item => 
-    item.Teor?.includes('Negativa')
+    item.Avaliação?.toLowerCase().includes('negativa')
   ).length;
   const total = data.length;
   const percentPositivo = total > 0 ? (positivas / total) * 100 : 0;
@@ -83,15 +83,15 @@ export function SentimentCharts({ data }: SentimentChartsProps) {
   return (
     <div className="space-y-6">
       <ChartCard 
-        title="Distribuição de Teor" 
+        title="Distribuição por Avaliação" 
         description="Classificação de sentimento das matérias"
-        headerContent={<ChartTypeSelector value={chartTypeTeor} onChange={setChartTypeTeor} />}
+        headerContent={<ChartTypeSelector value={chartTypeAvaliacao} onChange={setChartTypeAvaliacao} />}
       >
         <FlexibleChart
-          data={teorData}
-          type={chartTypeTeor}
+          data={avaliacaoData}
+          type={chartTypeAvaliacao}
           height={280}
-          colors={teorColors}
+          colors={avaliacaoColors}
           showLegend
           tooltipLabel="Matérias"
         />
