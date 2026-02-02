@@ -1,7 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Materia } from '@/hooks/useMaterias';
 import { parseValue, formatCurrency, formatCompact } from '@/utils/dataTransformers';
-import { FileText, DollarSign, Users, TrendingUp, BarChart3 } from 'lucide-react';
+import { FileText, DollarSign, Users, BarChart3 } from 'lucide-react';
 
 interface MetricsCardsProps {
   data: Materia[];
@@ -23,14 +23,6 @@ export function MetricsCards({ data }: MetricsCardsProps) {
   }, 0);
   
   const avgPublico = data.length > 0 ? (totalPublico / data.length) * 10.5 : 0;
-  
-  const positivas = data.filter(item => 
-    item.Teor?.includes('Positiva')
-  ).length;
-  const negativas = data.filter(item => 
-    item.Teor?.includes('Negativa')
-  ).length;
-  const saldo = positivas - negativas;
 
   const metrics = [
     {
@@ -63,18 +55,10 @@ export function MetricsCards({ data }: MetricsCardsProps) {
       color: 'text-orange-600',
       bgColor: 'bg-orange-100',
     },
-    {
-      title: 'Saldo de Avaliação',
-      value: saldo > 0 ? `+${saldo}` : saldo.toString(),
-      subtitle: `${positivas} positivas / ${negativas} negativas`,
-      icon: TrendingUp,
-      color: saldo >= 0 ? 'text-green-600' : 'text-red-600',
-      bgColor: saldo >= 0 ? 'bg-green-100' : 'bg-red-100',
-    },
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {metrics.map((metric) => (
         <Card key={metric.title}>
           <CardContent className="p-4">
