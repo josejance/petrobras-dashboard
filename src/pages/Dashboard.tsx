@@ -11,6 +11,7 @@ import { VeiculosCharts } from '@/components/dashboard/charts/VeiculosCharts';
 import { GeografiaCharts } from '@/components/dashboard/charts/GeografiaCharts';
 import { FontesTemasCharts } from '@/components/dashboard/charts/FontesTemasCharts';
 import { PanoramaGlobalCharts } from '@/components/dashboard/charts/PanoramaGlobalCharts';
+import { ExportReportButton } from '@/components/dashboard/ExportReportButton';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -163,6 +164,7 @@ export default function Dashboard() {
                   {isFiltered && ` (de ${materias.length.toLocaleString('pt-BR')} total)`}
                 </p>
               </div>
+              <ExportReportButton title="Relatório de Clipping" />
             </div>
             
             <DateRangeFilter
