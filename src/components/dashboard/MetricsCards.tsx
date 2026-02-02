@@ -1,7 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Materia } from '@/hooks/useMaterias';
 import { parseValue, formatCurrency, formatCompact } from '@/utils/dataTransformers';
-import { FileText, DollarSign, Users, BarChart3 } from 'lucide-react';
+import { FileText, Users, BarChart3 } from 'lucide-react';
 
 interface MetricsCardsProps {
   data: Materia[];
@@ -10,9 +10,6 @@ interface MetricsCardsProps {
 export function MetricsCards({ data }: MetricsCardsProps) {
   const totalMaterias = data.length;
   
-  const totalValor = data.reduce((sum, item) => {
-    return sum + parseValue(item.Valor);
-  }, 0);
   
   const totalVMN = data.reduce((sum, item) => {
     return sum + parseValue(item.VMN);
@@ -33,14 +30,6 @@ export function MetricsCards({ data }: MetricsCardsProps) {
       bgColor: 'bg-blue-100',
     },
     {
-      title: 'Valor de Mídia',
-      value: formatCompact(totalValor),
-      subtitle: formatCurrency(totalValor),
-      icon: DollarSign,
-      color: 'text-green-600',
-      bgColor: 'bg-green-100',
-    },
-    {
       title: 'VMN Total',
       value: formatCompact(totalVMN),
       subtitle: formatCurrency(totalVMN),
@@ -58,7 +47,7 @@ export function MetricsCards({ data }: MetricsCardsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {metrics.map((metric) => (
         <Card key={metric.title}>
           <CardContent className="p-4">
