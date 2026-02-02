@@ -59,7 +59,6 @@ export function MetricsCards({ data }: MetricsCardsProps) {
     {
       title: 'Público Médio',
       value: formatCompact(avgPublico),
-      subtitle: `Total: ${formatCompact(totalPublico)}`,
       icon: Users,
       color: 'text-orange-600',
       bgColor: 'bg-orange-100',
