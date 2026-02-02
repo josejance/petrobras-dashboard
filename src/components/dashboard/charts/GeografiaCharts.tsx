@@ -1,7 +1,5 @@
-import { useMemo } from 'react';
 import { Materia } from '@/hooks/useMaterias';
 import { ChartCard } from '../ChartCard';
-import { AIAnalysisCard } from '../AIAnalysisCard';
 import { groupByField, groupByFieldSum, toChartData, formatCompact, formatCurrency } from '@/utils/dataTransformers';
 import {
   BarChart,
@@ -37,19 +35,6 @@ export function GeografiaCharts({ data }: GeografiaChartsProps) {
   const ufData = toChartData(groupByField(data, 'uf')).slice(0, 15);
   const ufValorData = toChartData(groupByFieldSum(data, 'uf', 'Valor')).slice(0, 10);
   const abrangenciaValorData = toChartData(groupByFieldSum(data, 'Abrangência', 'Valor'));
-
-  // Dados agregados para IA
-  const aggregatedData = useMemo(() => ({
-    topEstadosPorVolume: ufData.map(u => ({ uf: u.name, quantidade: u.value })),
-    topEstadosPorValor: ufValorData.map(u => ({ 
-      uf: u.name, 
-      valor: formatCurrency(u.value as number) 
-    })),
-    abrangenciaXValor: abrangenciaValorData.map(a => ({ 
-      abrangencia: a.name, 
-      valor: formatCurrency(a.value as number) 
-    })),
-  }), [ufData, ufValorData, abrangenciaValorData]);
 
   return (
     <div className="space-y-6">
@@ -140,12 +125,6 @@ export function GeografiaCharts({ data }: GeografiaChartsProps) {
         </div>
       </ChartCard>
       </div>
-
-      <AIAnalysisCard 
-        sectionId="geografia"
-        sectionLabel="Distribuição Geográfica"
-        aggregatedData={aggregatedData}
-      />
     </div>
   );
 }

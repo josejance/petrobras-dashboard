@@ -1,7 +1,5 @@
-import { useMemo } from 'react';
 import { Materia } from '@/hooks/useMaterias';
 import { ChartCard } from '../ChartCard';
-import { AIAnalysisCard } from '../AIAnalysisCard';
 import { groupByField, groupByFieldSum, toChartData, formatCompact, formatCurrency } from '@/utils/dataTransformers';
 import {
   BarChart,
@@ -20,15 +18,6 @@ interface VeiculosChartsProps {
 export function VeiculosCharts({ data }: VeiculosChartsProps) {
   const veiculoData = toChartData(groupByField(data, 'Veiculo')).slice(0, 15);
   const veiculoValorData = toChartData(groupByFieldSum(data, 'Veiculo', 'Valor')).slice(0, 15);
-
-  // Dados agregados para IA
-  const aggregatedData = useMemo(() => ({
-    topVeiculosPorVolume: veiculoData.map(v => ({ veiculo: v.name, quantidade: v.value })),
-    topVeiculosPorValor: veiculoValorData.map(v => ({ 
-      veiculo: v.name, 
-      valor: formatCurrency(v.value as number) 
-    })),
-  }), [veiculoData, veiculoValorData]);
 
   return (
     <div className="space-y-6">
@@ -92,12 +81,6 @@ export function VeiculosCharts({ data }: VeiculosChartsProps) {
         </div>
       </ChartCard>
       </div>
-
-      <AIAnalysisCard 
-        sectionId="veiculos"
-        sectionLabel="Veículos de Mídia"
-        aggregatedData={aggregatedData}
-      />
     </div>
   );
 }

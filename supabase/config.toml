@@ -1,7 +1,4 @@
 project_id = "xprowohwetsmtqnedlva"
 
-[functions.generate-analysis]
-verify_jwt = false
-
 [functions.fetch-materias]
 verify_jwt = false

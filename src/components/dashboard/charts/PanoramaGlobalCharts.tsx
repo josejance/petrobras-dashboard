@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
 import { Materia } from '@/hooks/useMaterias';
 import { ChartCard } from '@/components/dashboard/ChartCard';
-import { AIAnalysisCard } from '@/components/dashboard/AIAnalysisCard';
-import { parseValue, parseDate, formatCurrency, groupByField, crossAnalysis } from '@/utils/dataTransformers';
+import { parseValue, parseDate, formatCurrency, groupByField } from '@/utils/dataTransformers';
 import {
   BarChart,
   Bar,
@@ -219,30 +218,6 @@ export function PanoramaGlobalCharts({ data }: PanoramaGlobalChartsProps) {
     return null;
   };
 
-  // Dados agregados para IA
-  const aggregatedData = useMemo(() => ({
-    periodo: 'Período selecionado no filtro',
-    totalMaterias,
-    mediaVn: (typeof mediaVn === 'number' && !isNaN(mediaVn) ? mediaVn : 0).toFixed(2),
-    somaVMN: formatCurrency(somaVMN),
-    distribuicaoAvaliacao: avaliacaoData.map(a => ({ tipo: a.name, quantidade: a.value })),
-    topNarrativas: narrativasAvaliacaoData.slice(0, 5).map(n => ({ 
-      tema: n.fullName, 
-      positivas: n.Positiva, 
-      negativas: n.Negativa 
-    })),
-    topVeiculos: veiculosAvaliacaoData.slice(0, 5).map(v => ({ 
-      veiculo: v.fullName, 
-      positivas: v.Positiva, 
-      negativas: v.Negativa 
-    })),
-    distribuicaoAbrangencia: materiasAvaliacaoData.map(m => ({
-      abrangencia: m.name,
-      positivas: m.Positiva,
-      negativas: m.Negativa
-    })),
-  }), [totalMaterias, mediaVn, somaVMN, avaliacaoData, narrativasAvaliacaoData, veiculosAvaliacaoData, materiasAvaliacaoData]);
-
   return (
     <div className="space-y-6">
       {/* KPIs Row */}
@@ -402,13 +377,6 @@ export function PanoramaGlobalCharts({ data }: PanoramaGlobalChartsProps) {
           </ResponsiveContainer>
         </div>
       </ChartCard>
-
-      {/* AI Analysis Card */}
-      <AIAnalysisCard 
-        sectionId="panorama"
-        sectionLabel="Panorama Global"
-        aggregatedData={aggregatedData}
-      />
     </div>
   );
 }

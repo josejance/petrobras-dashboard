@@ -1,7 +1,5 @@
-import { useMemo } from 'react';
 import { Materia } from '@/hooks/useMaterias';
 import { ChartCard } from './ChartCard';
-import { AIAnalysisCard } from './AIAnalysisCard';
 import { groupByField, toChartData } from '@/utils/dataTransformers';
 import {
   PieChart,
@@ -48,22 +46,8 @@ export function DistributionCharts({ data }: DistributionChartsProps) {
   // By UF (top 10)
   const ufData = toChartData(groupByField(data, 'uf')).slice(0, 10);
 
-  // Dados agregados para IA
-  const aggregatedData = useMemo(() => ({
-    distribuicaoMidia: midiaData.map(m => ({ tipo: m.name, quantidade: m.value })),
-    topVeiculos: veiculoData.map(v => ({ veiculo: v.name, quantidade: v.value })),
-    distribuicaoTipo: tipoData.map(t => ({ tipo: t.name, quantidade: t.value })),
-    distribuicaoAbrangencia: abrangenciaData.map(a => ({ abrangencia: a.name, quantidade: a.value })),
-    topEstados: ufData.map(u => ({ uf: u.name, quantidade: u.value })),
-  }), [midiaData, veiculoData, tipoData, abrangenciaData, ufData]);
-
   return (
     <div className="space-y-6">
-      <AIAnalysisCard 
-        sectionId="midia"
-        sectionLabel="Distribuição de Mídia"
-        aggregatedData={aggregatedData}
-      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
       <ChartCard title="Distribuição por Mídia" description="Tipo de veículo de comunicação">
