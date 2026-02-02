@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { Materia } from '@/hooks/useMaterias';
 import { ChartCard } from './ChartCard';
 import { parseValue, parseDate } from '@/utils/dataTransformers';
@@ -20,6 +20,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Download, FileSpreadsheet, FileText } from 'lucide-react';
+import { exportToCSV, exportToExcel, exportToPDF } from '@/utils/exportUtils';
+import html2canvas from 'html2canvas';
 
 interface TimelineChartsProps {
   data: Materia[];
@@ -43,6 +53,7 @@ const metricaDescriptions: Record<Metrica, string> = {
 export function TimelineCharts({ data }: TimelineChartsProps) {
   const [granularidade, setGranularidade] = useState<Granularidade>('mes');
   const [metrica, setMetrica] = useState<Metrica>('volume');
+  const chartRef = useRef<HTMLDivElement>(null);
 
   const chartData = useMemo(() => {
     const grouped = data.reduce((acc, item) => {
@@ -110,42 +121,120 @@ export function TimelineCharts({ data }: TimelineChartsProps) {
 
   const tooltipLabel = metrica === 'volume' ? 'Matérias' : metrica === 'vn_medio' ? 'VN Médio' : 'VMN Médio';
 
+  const getExportData = () => {
+    const headers = ['Período', metricaLabels[metrica]];
+    const rows = chartData.map(item => [
+      item.displayLabel,
+      metrica === 'volume' ? item.value : formatValue(item.value)
+    ]);
+    return { headers, rows };
+  };
+
+  const handleExportCSV = () => {
+    const { headers, rows } = getExportData();
+    exportToCSV({
+      headers,
+      rows,
+      fileName: `evolucao-temporal-${metrica}-${granularidade}`,
+    });
+  };
+
+  const handleExportExcel = () => {
+    const { headers, rows } = getExportData();
+    exportToExcel({
+      headers,
+      rows,
+      fileName: `evolucao-temporal-${metrica}-${granularidade}`,
+    });
+  };
+
+  const handleExportPDF = async () => {
+    const { headers, rows } = getExportData();
+    
+    let chartImageBase64: string | undefined;
+    if (chartRef.current) {
+      try {
+        const canvas = await html2canvas(chartRef.current, {
+          backgroundColor: '#ffffff',
+          scale: 2,
+        });
+        chartImageBase64 = canvas.toDataURL('image/png');
+      } catch (error) {
+        console.error('Erro ao capturar gráfico:', error);
+      }
+    }
+
+    exportToPDF({
+      title: 'Relatório de Evolução Temporal',
+      subtitle: `${metricaLabels[metrica]} - ${granularidade === 'dia' ? 'Por Dia' : 'Por Mês'}`,
+      headers,
+      rows,
+      fileName: `relatorio-evolucao-temporal-${metrica}-${granularidade}`,
+      chartImageBase64,
+    });
+  };
+
   return (
     <div className="space-y-6">
       <ChartCard 
         title="Evolução Temporal" 
         description={`${metricaDescriptions[metrica]} por ${granularidade === 'dia' ? 'dia' : 'mês'}`}
       >
-        <div className="flex flex-wrap gap-4 mb-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Período:</span>
-            <Select value={granularidade} onValueChange={(v) => setGranularidade(v as Granularidade)}>
-              <SelectTrigger className="w-[120px] h-9 bg-background">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-background z-50">
-                <SelectItem value="dia">Por Dia</SelectItem>
-                <SelectItem value="mes">Por Mês</SelectItem>
-              </SelectContent>
-            </Select>
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div className="flex flex-wrap gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Período:</span>
+              <Select value={granularidade} onValueChange={(v) => setGranularidade(v as Granularidade)}>
+                <SelectTrigger className="w-[120px] h-9 bg-background">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-background z-50">
+                  <SelectItem value="dia">Por Dia</SelectItem>
+                  <SelectItem value="mes">Por Mês</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Métrica:</span>
+              <Select value={metrica} onValueChange={(v) => setMetrica(v as Metrica)}>
+                <SelectTrigger className="w-[200px] h-9 bg-background">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-background z-50">
+                  <SelectItem value="volume">Volume de Publicações</SelectItem>
+                  <SelectItem value="vn_medio">VN Médio Diário</SelectItem>
+                  <SelectItem value="vmn_medio">VMN Médio Diário</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Métrica:</span>
-            <Select value={metrica} onValueChange={(v) => setMetrica(v as Metrica)}>
-              <SelectTrigger className="w-[200px] h-9 bg-background">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-background z-50">
-                <SelectItem value="volume">Volume de Publicações</SelectItem>
-                <SelectItem value="vn_medio">VN Médio Diário</SelectItem>
-                <SelectItem value="vmn_medio">VMN Médio Diário</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                <Download className="h-4 w-4" />
+                Exportar
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-background">
+              <DropdownMenuItem onClick={handleExportCSV} className="gap-2 cursor-pointer">
+                <FileSpreadsheet className="h-4 w-4" />
+                Exportar CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleExportExcel} className="gap-2 cursor-pointer">
+                <FileSpreadsheet className="h-4 w-4" />
+                Exportar Excel
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleExportPDF} className="gap-2 cursor-pointer">
+                <FileText className="h-4 w-4" />
+                Exportar PDF
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
-        <div className="h-72">
+        <div ref={chartRef} className="h-72">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
