@@ -1,12 +1,12 @@
+import { useState } from 'react';
 import { Materia } from '@/hooks/useMaterias';
 import { ChartCard } from './ChartCard';
+import { ChartTypeSelector, ChartType } from './ChartTypeSelector';
+import { FlexibleChart } from './FlexibleChart';
 import { groupByField, toChartData, parseDate, parseValue } from '@/utils/dataTransformers';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
-  PieChart,
-  Pie,
-  Cell,
   LineChart,
   Line,
   XAxis,
@@ -14,7 +14,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from 'recharts';
 
 interface SentimentChartsProps {
@@ -33,12 +32,17 @@ const SENTIMENT_COLORS: Record<string, string> = {
 };
 
 export function SentimentCharts({ data }: SentimentChartsProps) {
+  const [chartTypeTeor, setChartTypeTeor] = useState<ChartType>('pie');
+  const [chartTypeTendencia, setChartTypeTendencia] = useState<ChartType>('area');
+
   // Teor distribution
   const teorData = toChartData(groupByField(data, 'Teor')).map(item => ({
-    name: item.name as string,
-    value: item.value as number,
-    color: SENTIMENT_COLORS[item.name as string] || SENTIMENT_COLORS['Não informado'],
+    name: item.name,
+    value: item.value,
+    color: SENTIMENT_COLORS[item.name] || SENTIMENT_COLORS['Não informado'],
   }));
+
+  const teorColors = teorData.map(d => d.color);
 
   // Calculate overall sentiment gauge
   const positivas = data.filter(item => 
@@ -49,7 +53,6 @@ export function SentimentCharts({ data }: SentimentChartsProps) {
   ).length;
   const total = data.length;
   const percentPositivo = total > 0 ? (positivas / total) * 100 : 0;
-  const percentNegativo = total > 0 ? (negativas / total) * 100 : 0;
 
   // Vn index by month (usando coluna Vn em vez de K)
   const vnByMonth = data.reduce((acc, item) => {
@@ -73,54 +76,29 @@ export function SentimentCharts({ data }: SentimentChartsProps) {
   const vnTrendData = Object.values(vnByMonth)
     .sort((a, b) => a.month.localeCompare(b.month))
     .map(item => ({
-      displayMonth: item.displayMonth,
-      mediaVn: item.count > 0 ? item.totalVn / item.count : 0,
+      name: item.displayMonth,
+      value: item.count > 0 ? item.totalVn / item.count : 0,
     }));
-
-  // Avaliação distribution
-  const avaliacaoData = toChartData(groupByField(data, 'Avaliação'));
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-      <ChartCard title="Distribuição de Teor" description="Classificação de sentimento das matérias">
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={teorData}
-                cx="50%"
-                cy="50%"
-                innerRadius={50}
-                outerRadius={80}
-                paddingAngle={2}
-                dataKey="value"
-                nameKey="name"
-              >
-                {teorData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip 
-                formatter={(value: number, name: string) => [value, name]}
-                contentStyle={{ 
-                  backgroundColor: 'hsl(var(--background))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px'
-                }}
-              />
-              <Legend 
-                layout="horizontal"
-                verticalAlign="bottom"
-                align="center"
-              />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
+      <ChartCard 
+        title="Distribuição de Teor" 
+        description="Classificação de sentimento das matérias"
+        headerContent={<ChartTypeSelector value={chartTypeTeor} onChange={setChartTypeTeor} />}
+      >
+        <FlexibleChart
+          data={teorData}
+          type={chartTypeTeor}
+          height={280}
+          colors={teorColors}
+          showLegend
+          tooltipLabel="Matérias"
+        />
       </ChartCard>
 
       <ChartCard title="Índice de Sentimento" description="Panorama geral positivo vs negativo">
-        <div className="h-64 flex flex-col items-center justify-center">
+        <div className="h-72 flex flex-col items-center justify-center">
           <div className="relative w-48 h-48">
             <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
               {/* Background circle */}
@@ -162,39 +140,20 @@ export function SentimentCharts({ data }: SentimentChartsProps) {
         </div>
       </ChartCard>
 
-      <ChartCard title="Tendência do Índice Vn" description="Evolução média do índice Vn por mês">
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={vnTrendData}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis 
-                dataKey="displayMonth" 
-                tick={{ fontSize: 11 }}
-              />
-              <YAxis 
-                tick={{ fontSize: 11 }}
-                domain={['auto', 'auto']}
-              />
-              <Tooltip 
-                formatter={(value: number) => [value.toFixed(2), 'Média Vn']}
-                contentStyle={{ 
-                  backgroundColor: 'hsl(var(--background))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px'
-                }}
-              />
-              <Line
-                type="monotone"
-                dataKey="mediaVn"
-                stroke="hsl(262, 83%, 58%)"
-                strokeWidth={2}
-                dot={{ fill: 'hsl(262, 83%, 58%)', r: 4 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+      <ChartCard 
+        title="Tendência do Índice Vn" 
+        description="Evolução média do índice Vn por mês"
+        headerContent={<ChartTypeSelector value={chartTypeTendencia} onChange={setChartTypeTendencia} />}
+      >
+        <FlexibleChart
+          data={vnTrendData}
+          type={chartTypeTendencia}
+          height={280}
+          color="hsl(262, 83%, 58%)"
+          valueFormatter={(v) => v.toFixed(2)}
+          tooltipLabel="Média Vn"
+        />
       </ChartCard>
-      </div>
     </div>
   );
 }
