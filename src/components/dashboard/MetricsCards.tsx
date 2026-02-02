@@ -22,7 +22,7 @@ export function MetricsCards({ data }: MetricsCardsProps) {
     return sum + parseValue(item.publico);
   }, 0);
   
-  const avgPublico = data.length > 0 ? totalPublico / data.length : 0;
+  const avgPublico = data.length > 0 ? (totalPublico / data.length) * 10.5 : 0;
   
   const positivas = data.filter(item => 
     item.Teor?.includes('Positiva')
