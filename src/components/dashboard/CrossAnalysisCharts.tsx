@@ -1,7 +1,5 @@
-import { useMemo } from 'react';
 import { Materia } from '@/hooks/useMaterias';
 import { ChartCard } from './ChartCard';
-import { AIAnalysisCard } from './AIAnalysisCard';
 import { groupByField, groupByFieldSum, toChartData, formatCompact, formatCurrency } from '@/utils/dataTransformers';
 import {
   BarChart,
@@ -75,37 +73,8 @@ export function CrossAnalysisCharts({ data }: CrossAnalysisChartsProps) {
   // Abrangência x Valor
   const abrangenciaValorData = toChartData(groupByFieldSum(data, 'Abrangência', 'Valor'));
 
-  // Dados agregados para IA
-  const aggregatedData = useMemo(() => ({
-    midiaXAvaliacao: midiaAvaliacaoData.map(m => ({ 
-      midia: m.name, 
-      positivas: m.Positivas, 
-      negativas: m.Negativas 
-    })),
-    topVeiculosPorValor: veiculoValorData.slice(0, 5).map(v => ({ 
-      veiculo: v.name, 
-      valor: formatCurrency(v.value as number) 
-    })),
-    topTemas: temaData.map(t => ({ tema: t.name, quantidade: t.value })),
-    topFontes: fonteData.map(f => ({ fonte: f.name, aparicoes: f.value })),
-    destaqueXAvaliacao: destaqueAvaliacaoData.map(d => ({ 
-      destaque: d.name, 
-      positivas: d.Positivas, 
-      negativas: d.Negativas 
-    })),
-    abrangenciaXValor: abrangenciaValorData.map(a => ({ 
-      abrangencia: a.name, 
-      valor: formatCurrency(a.value as number) 
-    })),
-  }), [midiaAvaliacaoData, veiculoValorData, temaData, fonteData, destaqueAvaliacaoData, abrangenciaValorData]);
-
   return (
     <div className="space-y-6">
-      <AIAnalysisCard 
-        sectionId="cruzamentos"
-        sectionLabel="Cruzamentos de Dados"
-        aggregatedData={aggregatedData}
-      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <ChartCard title="Mídia x Avaliação" description="Distribuição de sentimento por tipo de mídia">

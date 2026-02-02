@@ -1,8 +1,6 @@
-import { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Materia } from '@/hooks/useMaterias';
 import { parseValue, formatCurrency, formatCompact } from '@/utils/dataTransformers';
-import { AIAnalysisCard } from '@/components/dashboard/AIAnalysisCard';
 import { FileText, DollarSign, Users, TrendingUp, BarChart3 } from 'lucide-react';
 
 interface MetricsCardsProps {
@@ -73,45 +71,26 @@ export function MetricsCards({ data }: MetricsCardsProps) {
     },
   ];
 
-  // Dados agregados para IA
-  const aggregatedData = useMemo(() => ({
-    totalMaterias,
-    valorMidia: formatCurrency(totalValor),
-    vmnTotal: formatCurrency(totalVMN),
-    publicoAlcancado: formatCompact(totalPublico),
-    materiasPositivas: positivas,
-    materiasNegativas: negativas,
-    saldoAvaliacao: saldo,
-  }), [totalMaterias, totalValor, totalVMN, totalPublico, positivas, negativas, saldo]);
-
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        {metrics.map((metric) => (
-          <Card key={metric.title}>
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between">
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">{metric.title}</p>
-                  <p className="text-2xl font-bold">{metric.value}</p>
-                  {metric.subtitle && (
-                    <p className="text-xs text-muted-foreground">{metric.subtitle}</p>
-                  )}
-                </div>
-                <div className={`p-2 rounded-lg ${metric.bgColor}`}>
-                  <metric.icon className={`h-5 w-5 ${metric.color}`} />
-                </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      {metrics.map((metric) => (
+        <Card key={metric.title}>
+          <CardContent className="p-4">
+            <div className="flex items-start justify-between">
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">{metric.title}</p>
+                <p className="text-2xl font-bold">{metric.value}</p>
+                {metric.subtitle && (
+                  <p className="text-xs text-muted-foreground">{metric.subtitle}</p>
+                )}
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <AIAnalysisCard 
-        sectionId="metricas"
-        sectionLabel="Métricas Gerais"
-        aggregatedData={aggregatedData}
-      />
+              <div className={`p-2 rounded-lg ${metric.bgColor}`}>
+                <metric.icon className={`h-5 w-5 ${metric.color}`} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 }

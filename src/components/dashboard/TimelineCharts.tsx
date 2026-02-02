@@ -1,8 +1,6 @@
-import { useMemo } from 'react';
 import { Materia } from '@/hooks/useMaterias';
 import { ChartCard } from './ChartCard';
-import { AIAnalysisCard } from './AIAnalysisCard';
-import { groupByMonth, parseValue, formatCompact, parseDate, getSentimentData } from '@/utils/dataTransformers';
+import { groupByMonth, parseValue, formatCompact, parseDate } from '@/utils/dataTransformers';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
@@ -69,18 +67,6 @@ export function TimelineCharts({ data }: TimelineChartsProps) {
 
   const sentimentData = Object.values(sentimentByMonth)
     .sort((a, b) => a.month.localeCompare(b.month));
-
-  // Dados agregados para IA
-  const aggregatedData = useMemo(() => ({
-    volumePorMes: volumeByMonth.map(v => ({ mes: v.displayMonth, quantidade: v.count })),
-    valorPorMes: valorData.map(v => ({ mes: v.displayMonth, valor: v.valor })),
-    sentimentoPorMes: sentimentData.map(s => ({ 
-      mes: s.displayMonth, 
-      positivas: s.positivas, 
-      negativas: s.negativas,
-      neutras: s.neutras
-    })),
-  }), [volumeByMonth, valorData, sentimentData]);
 
   return (
     <div className="space-y-6">
@@ -201,12 +187,6 @@ export function TimelineCharts({ data }: TimelineChartsProps) {
         </div>
       </ChartCard>
       </div>
-
-      <AIAnalysisCard 
-        sectionId="timeline"
-        sectionLabel="Evolução Temporal"
-        aggregatedData={aggregatedData}
-      />
     </div>
   );
 }

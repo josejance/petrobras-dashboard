@@ -1,7 +1,5 @@
-import { useMemo } from 'react';
 import { Materia } from '@/hooks/useMaterias';
 import { ChartCard } from '../ChartCard';
-import { AIAnalysisCard } from '../AIAnalysisCard';
 import { groupByField, toChartData } from '@/utils/dataTransformers';
 import {
   PieChart,
@@ -57,18 +55,6 @@ export function MidiaCharts({ data }: MidiaChartsProps) {
     
     return Object.values(result);
   })();
-
-  // Dados agregados para IA
-  const aggregatedData = useMemo(() => ({
-    distribuicaoMidia: midiaData.map(m => ({ tipo: m.name, quantidade: m.value })),
-    distribuicaoTipo: tipoData.map(t => ({ tipo: t.name, quantidade: t.value })),
-    distribuicaoAbrangencia: abrangenciaData.map(a => ({ abrangencia: a.name, quantidade: a.value })),
-    midiaXAvaliacao: midiaAvaliacaoData.map(m => ({ 
-      midia: m.name, 
-      positivas: m.Positivas, 
-      negativas: m.Negativas 
-    })),
-  }), [midiaData, tipoData, abrangenciaData, midiaAvaliacaoData]);
 
   return (
     <div className="space-y-6">
@@ -185,12 +171,6 @@ export function MidiaCharts({ data }: MidiaChartsProps) {
         </div>
       </ChartCard>
       </div>
-
-      <AIAnalysisCard 
-        sectionId="midia"
-        sectionLabel="Análise de Mídia"
-        aggregatedData={aggregatedData}
-      />
     </div>
   );
 }

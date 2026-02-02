@@ -1,7 +1,5 @@
-import { useMemo } from 'react';
 import { Materia } from '@/hooks/useMaterias';
 import { ChartCard } from './ChartCard';
-import { AIAnalysisCard } from './AIAnalysisCard';
 import { groupByField, toChartData, parseDate, parseValue } from '@/utils/dataTransformers';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -81,16 +79,6 @@ export function SentimentCharts({ data }: SentimentChartsProps) {
 
   // Avaliação distribution
   const avaliacaoData = toChartData(groupByField(data, 'Avaliação'));
-
-  // Dados agregados para IA
-  const aggregatedData = useMemo(() => ({
-    distribuicaoTeor: teorData.map(t => ({ tipo: t.name, quantidade: t.value })),
-    percentualPositivo: percentPositivo.toFixed(1),
-    percentualNegativo: percentNegativo.toFixed(1),
-    totalPositivas: positivas,
-    totalNegativas: negativas,
-    tendenciaVn: vnTrendData.map(v => ({ mes: v.displayMonth, mediaVn: v.mediaVn.toFixed(2) })),
-  }), [teorData, percentPositivo, percentNegativo, positivas, negativas, vnTrendData]);
 
   return (
     <div className="space-y-6">
@@ -207,12 +195,6 @@ export function SentimentCharts({ data }: SentimentChartsProps) {
         </div>
       </ChartCard>
       </div>
-
-      <AIAnalysisCard 
-        sectionId="sentimento"
-        sectionLabel="Análise de Sentimento"
-        aggregatedData={aggregatedData}
-      />
     </div>
   );
 }

@@ -1,7 +1,5 @@
-import { useMemo } from 'react';
 import { Materia } from '@/hooks/useMaterias';
 import { ChartCard } from '../ChartCard';
-import { AIAnalysisCard } from '../AIAnalysisCard';
 import { groupByField, toChartData } from '@/utils/dataTransformers';
 import {
   BarChart,
@@ -44,17 +42,6 @@ export function FontesTemasCharts({ data }: FontesTemasChartsProps) {
     
     return Object.values(result);
   })();
-
-  // Dados agregados para IA
-  const aggregatedData = useMemo(() => ({
-    topTemas: temaData.map(t => ({ tema: t.name, quantidade: t.value })),
-    topFontes: fonteData.map(f => ({ fonte: f.name, aparicoes: f.value })),
-    destaqueXAvaliacao: destaqueAvaliacaoData.map(d => ({ 
-      destaque: d.name, 
-      positivas: d.Positivas, 
-      negativas: d.Negativas 
-    })),
-  }), [temaData, fonteData, destaqueAvaliacaoData]);
 
   return (
     <div className="space-y-6">
@@ -133,12 +120,6 @@ export function FontesTemasCharts({ data }: FontesTemasChartsProps) {
         </div>
       </ChartCard>
       </div>
-
-      <AIAnalysisCard 
-        sectionId="fontes_temas"
-        sectionLabel="Fontes e Temas"
-        aggregatedData={aggregatedData}
-      />
     </div>
   );
 }
