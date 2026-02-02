@@ -1,6 +1,6 @@
 import { Materia } from '@/hooks/useMaterias';
 import { ChartCard } from '../ChartCard';
-import { groupByField, groupByFieldSum, toChartData, formatCompact, formatCurrency } from '@/utils/dataTransformers';
+import { groupByField, formatCompact } from '@/utils/dataTransformers';
 import {
   BarChart,
   Bar,
@@ -31,14 +31,41 @@ const COLORS = [
   'hsl(15, 80%, 55%)',
 ];
 
+// Helper to parse VMN values correctly
+function parseVMN(value: string | number | null | undefined): number {
+  if (value === null || value === undefined || value === '') return 0;
+  if (typeof value === 'number') return value;
+  const cleaned = String(value).replace(/[^\d,.-]/g, '').replace(',', '.');
+  const parsed = parseFloat(cleaned);
+  return isNaN(parsed) ? 0 : parsed;
+}
+
+// Group by field and sum VMN
+function groupByVMN(data: Materia[], field: keyof Materia): { name: string; value: number }[] {
+  const grouped = new Map<string, number>();
+  
+  data.forEach(item => {
+    const key = String(item[field] || 'Não informado');
+    const vmn = parseVMN(item.VMN);
+    grouped.set(key, (grouped.get(key) || 0) + vmn);
+  });
+  
+  return Array.from(grouped.entries())
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value);
+}
+
 export function GeografiaCharts({ data }: GeografiaChartsProps) {
-  const ufData = toChartData(groupByField(data, 'uf')).slice(0, 15);
-  const ufValorData = toChartData(groupByFieldSum(data, 'uf', 'Valor')).slice(0, 10);
-  const abrangenciaValorData = toChartData(groupByFieldSum(data, 'Abrangência', 'Valor'));
+  const ufData = Object.entries(groupByField(data, 'uf'))
+    .map(([name, count]) => ({ name, value: count }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 15);
+  
+  const ufVMNData = groupByVMN(data, 'uf').slice(0, 10);
+  const abrangenciaVMNData = groupByVMN(data, 'Abrangência');
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
       <ChartCard title="Top 15 Estados por Volume" description="Distribuição geográfica por UF">
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
@@ -65,12 +92,12 @@ export function GeografiaCharts({ data }: GeografiaChartsProps) {
         </div>
       </ChartCard>
 
-      <ChartCard title="Top 10 Estados por Valor" description="Valor de mídia por UF">
+      <ChartCard title="Top 10 Estados por VMN" description="Valor de mídia (VMN total) por UF">
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
-                data={ufValorData}
+                data={ufVMNData}
                 cx="50%"
                 cy="50%"
                 outerRadius={100}
@@ -78,14 +105,14 @@ export function GeografiaCharts({ data }: GeografiaChartsProps) {
                 nameKey="name"
                 label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
               >
-                {ufValorData.map((_, index) => (
+                {ufVMNData.map((_, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
               <Tooltip 
                 formatter={(value: number) => [
                   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value),
-                  'Valor'
+                  'VMN Total'
                 ]}
                 contentStyle={{ 
                   backgroundColor: 'hsl(var(--background))',
@@ -98,10 +125,10 @@ export function GeografiaCharts({ data }: GeografiaChartsProps) {
         </div>
       </ChartCard>
 
-      <ChartCard title="Abrangência x Valor" description="Valor de mídia por abrangência">
+      <ChartCard title="Abrangência x VMN" description="Valor de mídia (VMN total) por abrangência">
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={abrangenciaValorData}>
+            <BarChart data={abrangenciaVMNData}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
               <XAxis dataKey="name" tick={{ fontSize: 11 }} />
               <YAxis 
@@ -111,7 +138,7 @@ export function GeografiaCharts({ data }: GeografiaChartsProps) {
               <Tooltip 
                 formatter={(value: number) => [
                   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value),
-                  'Valor'
+                  'VMN Total'
                 ]}
                 contentStyle={{ 
                   backgroundColor: 'hsl(var(--background))',
@@ -124,7 +151,6 @@ export function GeografiaCharts({ data }: GeografiaChartsProps) {
           </ResponsiveContainer>
         </div>
       </ChartCard>
-      </div>
     </div>
   );
 }
