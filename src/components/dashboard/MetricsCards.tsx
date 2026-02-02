@@ -22,6 +22,8 @@ export function MetricsCards({ data }: MetricsCardsProps) {
     return sum + parseValue(item.publico);
   }, 0);
   
+  const avgPublico = data.length > 0 ? totalPublico / data.length : 0;
+  
   const positivas = data.filter(item => 
     item.Teor?.includes('Positiva')
   ).length;
@@ -55,8 +57,9 @@ export function MetricsCards({ data }: MetricsCardsProps) {
       bgColor: 'bg-purple-100',
     },
     {
-      title: 'Público Alcançado',
-      value: formatCompact(totalPublico),
+      title: 'Público Médio',
+      value: formatCompact(avgPublico),
+      subtitle: `Total: ${formatCompact(totalPublico)}`,
       icon: Users,
       color: 'text-orange-600',
       bgColor: 'bg-orange-100',
