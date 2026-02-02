@@ -1,22 +1,19 @@
+import { useState } from 'react';
 import { Materia } from '@/hooks/useMaterias';
 import { ChartCard } from '../ChartCard';
+import { ChartTypeSelector, ChartType } from '../ChartTypeSelector';
+import { FlexibleChart } from '../FlexibleChart';
 import { groupByField, toChartData } from '@/utils/dataTransformers';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from 'recharts';
 
 interface FontesTemasChartsProps {
   data: Materia[];
 }
 
 export function FontesTemasCharts({ data }: FontesTemasChartsProps) {
+  const [chartType1, setChartType1] = useState<ChartType>('barHorizontal');
+  const [chartType2, setChartType2] = useState<ChartType>('barHorizontal');
+  const [chartType3, setChartType3] = useState<ChartType>('stacked');
+
   const temaData = toChartData(groupByField(data, 'Temas')).slice(0, 15);
   const fonteData = toChartData(groupByField(data, 'Fonte'))
     .filter(item => item.name !== 'Não informado' && item.name !== '')
@@ -43,83 +40,57 @@ export function FontesTemasCharts({ data }: FontesTemasChartsProps) {
     return Object.values(result);
   })();
 
+  const stackedKeys = [
+    { key: 'Positivas', color: 'hsl(142, 71%, 45%)' },
+    { key: 'Negativas', color: 'hsl(0, 84%, 60%)' },
+  ];
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <ChartCard title="Top 15 Temas" description="Temas mais frequentes nas matérias">
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={temaData} layout="vertical" margin={{ left: 120 }}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis type="number" tick={{ fontSize: 11 }} />
-              <YAxis 
-                type="category" 
-                dataKey="name" 
-                tick={{ fontSize: 10 }}
-                width={115}
-              />
-              <Tooltip 
-                formatter={(value: number) => [value, 'Matérias']}
-                contentStyle={{ 
-                  backgroundColor: 'hsl(var(--background))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px'
-                }}
-              />
-              <Bar dataKey="value" fill="hsl(262, 83%, 58%)" radius={[0, 4, 4, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </ChartCard>
+        <ChartCard 
+          title="Top 15 Temas" 
+          description="Temas mais frequentes nas matérias"
+          headerContent={<ChartTypeSelector value={chartType1} onChange={setChartType1} />}
+        >
+          <FlexibleChart
+            data={temaData}
+            type={chartType1}
+            height={320}
+            color="hsl(262, 83%, 58%)"
+            tooltipLabel="Matérias"
+          />
+        </ChartCard>
 
-      <ChartCard title="Top 15 Fontes" description="Fontes mais citadas nas matérias">
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={fonteData} layout="vertical" margin={{ left: 120 }}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis type="number" tick={{ fontSize: 11 }} />
-              <YAxis 
-                type="category" 
-                dataKey="name" 
-                tick={{ fontSize: 10 }}
-                width={115}
-              />
-              <Tooltip 
-                formatter={(value: number) => [value, 'Aparições']}
-                contentStyle={{ 
-                  backgroundColor: 'hsl(var(--background))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px'
-                }}
-              />
-              <Bar dataKey="value" fill="hsl(24, 95%, 53%)" radius={[0, 4, 4, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </ChartCard>
-
-      <ChartCard title="Destaque x Avaliação" description="Nível de destaque por sentimento" className="lg:col-span-2">
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={destaqueAvaliacaoData}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-              <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-              <YAxis tick={{ fontSize: 11 }} />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: 'hsl(var(--background))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px'
-                }}
-              />
-              <Legend />
-              <Bar dataKey="Positivas" fill="hsl(142, 71%, 45%)" stackId="a" />
-              <Bar dataKey="Negativas" fill="hsl(0, 84%, 60%)" stackId="a" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </ChartCard>
+        <ChartCard 
+          title="Top 15 Fontes" 
+          description="Fontes mais citadas nas matérias"
+          headerContent={<ChartTypeSelector value={chartType2} onChange={setChartType2} />}
+        >
+          <FlexibleChart
+            data={fonteData}
+            type={chartType2}
+            height={320}
+            color="hsl(24, 95%, 53%)"
+            tooltipLabel="Aparições"
+          />
+        </ChartCard>
       </div>
+
+      <ChartCard 
+        title="Destaque x Avaliação" 
+        description="Nível de destaque por sentimento"
+        headerContent={<ChartTypeSelector value={chartType3} onChange={setChartType3} options={['stacked', 'stackedHorizontal', 'bar']} />}
+      >
+        <FlexibleChart
+          data={destaqueAvaliacaoData}
+          type={chartType3}
+          height={256}
+          stackedKeys={stackedKeys}
+          showLegend
+          tooltipLabel="Matérias"
+        />
+      </ChartCard>
     </div>
   );
 }

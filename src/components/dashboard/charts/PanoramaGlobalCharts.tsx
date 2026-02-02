@@ -1,22 +1,9 @@
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Materia } from '@/hooks/useMaterias';
 import { ChartCard } from '@/components/dashboard/ChartCard';
+import { ChartTypeSelector, ChartType } from '@/components/dashboard/ChartTypeSelector';
+import { FlexibleChart } from '@/components/dashboard/FlexibleChart';
 import { parseValue, parseDate, formatCurrency, groupByField } from '@/utils/dataTransformers';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  AreaChart,
-  Area,
-} from 'recharts';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -24,7 +11,6 @@ import { ptBR } from 'date-fns/locale';
 const COLORS = {
   positiva: '#2E7D32',
   negativa: '#F57C00',
-  alerta: '#FFC107',
 };
 
 const SENTIMENT_COLORS: Record<string, string> = {
@@ -42,11 +28,16 @@ interface PanoramaGlobalChartsProps {
 }
 
 export function PanoramaGlobalCharts({ data }: PanoramaGlobalChartsProps) {
+  const [chartTypeMateriasAvaliacao, setChartTypeMateriasAvaliacao] = useState<ChartType>('stackedHorizontal');
+  const [chartTypeAvaliacao, setChartTypeAvaliacao] = useState<ChartType>('pie');
+  const [chartTypeTimeline, setChartTypeTimeline] = useState<ChartType>('area');
+  const [chartTypeNarrativas, setChartTypeNarrativas] = useState<ChartType>('stackedHorizontal');
+  const [chartTypeVeiculos, setChartTypeVeiculos] = useState<ChartType>('stackedHorizontal');
+
   // KPIs
   const totalMaterias = data.length;
   
   const mediaVn = useMemo(() => {
-    // Campo Vn (com n minúsculo) contém a valoração
     const validItems = data.filter(item => {
       const vn = item['Vn'] as string | number | null | undefined;
       return vn !== null && vn !== undefined && vn !== '';
@@ -74,6 +65,8 @@ export function PanoramaGlobalCharts({ data }: PanoramaGlobalChartsProps) {
       }))
       .sort((a, b) => b.value - a.value);
   }, [data]);
+
+  const avaliacaoColors = avaliacaoData.map(d => d.color);
 
   // Matérias x Avaliação (barras horizontais por Abrangência)
   const materiasAvaliacaoData = useMemo(() => {
@@ -125,7 +118,6 @@ export function PanoramaGlobalCharts({ data }: PanoramaGlobalChartsProps) {
       }
     });
 
-    // Sort by date
     const sortedDates = data
       .map(item => parseDate(item.Data))
       .filter(Boolean)
@@ -134,7 +126,7 @@ export function PanoramaGlobalCharts({ data }: PanoramaGlobalChartsProps) {
     const uniqueDates = [...new Set(sortedDates.map(d => format(d!, 'dd/MM', { locale: ptBR })))];
 
     return uniqueDates.map(key => ({
-      date: key,
+      name: key,
       Positiva: grouped[key]?.positiva || 0,
       Negativa: grouped[key]?.negativa || 0,
     }));
@@ -162,12 +154,10 @@ export function PanoramaGlobalCharts({ data }: PanoramaGlobalChartsProps) {
     return Object.entries(result)
       .map(([name, values]) => ({
         name: name.length > 40 ? name.substring(0, 40) + '...' : name,
-        fullName: name,
         Positiva: values.positiva,
         Negativa: values.negativa,
-        total: values.positiva + values.negativa,
       }))
-      .sort((a, b) => b.total - a.total)
+      .sort((a, b) => (b.Positiva + b.Negativa) - (a.Positiva + a.Negativa))
       .slice(0, 10);
   }, [data]);
 
@@ -193,30 +183,17 @@ export function PanoramaGlobalCharts({ data }: PanoramaGlobalChartsProps) {
     return Object.entries(result)
       .map(([name, values]) => ({
         name: name.length > 35 ? name.substring(0, 35) + '...' : name,
-        fullName: name,
         Positiva: values.positiva,
         Negativa: values.negativa,
-        total: values.positiva + values.negativa,
       }))
-      .sort((a, b) => b.total - a.total)
+      .sort((a, b) => (b.Positiva + b.Negativa) - (a.Positiva + a.Negativa))
       .slice(0, 10);
   }, [data]);
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-background border rounded-lg shadow-lg p-3">
-          <p className="font-medium">{payload[0]?.payload?.fullName || label}</p>
-          {payload.map((entry: any, index: number) => (
-            <p key={index} style={{ color: entry.color }}>
-              {entry.name}: {entry.value.toLocaleString('pt-BR')}
-            </p>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
+  const stackedKeys = [
+    { key: 'Positiva', color: COLORS.positiva },
+    { key: 'Negativa', color: COLORS.negativa },
+  ];
 
   return (
     <div className="space-y-6">
@@ -244,138 +221,87 @@ export function PanoramaGlobalCharts({ data }: PanoramaGlobalChartsProps) {
 
       {/* Charts Row 1: Matérias x Avaliação + Pizza */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ChartCard title="Matérias x Avaliação" description="Distribuição por abrangência">
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={materiasAvaliacaoData}
-                layout="vertical"
-                margin={{ top: 5, right: 30, left: 80, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
-                <XAxis type="number" tickFormatter={(v) => v.toLocaleString('pt-BR')} />
-                <YAxis type="category" dataKey="name" width={70} tick={{ fontSize: 12 }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend />
-                <Bar dataKey="Positiva" stackId="a" fill={COLORS.positiva} />
-                <Bar dataKey="Negativa" stackId="a" fill={COLORS.negativa} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+        <ChartCard 
+          title="Matérias x Avaliação" 
+          description="Distribuição por abrangência"
+          headerContent={<ChartTypeSelector value={chartTypeMateriasAvaliacao} onChange={setChartTypeMateriasAvaliacao} options={['stackedHorizontal', 'stacked', 'bar']} />}
+        >
+          <FlexibleChart
+            data={materiasAvaliacaoData}
+            type={chartTypeMateriasAvaliacao}
+            height={320}
+            stackedKeys={stackedKeys}
+            showLegend
+            tooltipLabel="Matérias"
+          />
         </ChartCard>
 
-        <ChartCard title="Avaliação" description="Distribuição geral">
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={avaliacaoData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
-                  paddingAngle={2}
-                  dataKey="value"
-                  label={({ name, value, percent }) => 
-                    `${value.toLocaleString('pt-BR')} (${(percent * 100).toFixed(0)}%)`
-                  }
-                  labelLine={true}
-                >
-                  {avaliacaoData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  formatter={(value: number) => value.toLocaleString('pt-BR')}
-                />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
+        <ChartCard 
+          title="Avaliação" 
+          description="Distribuição geral"
+          headerContent={<ChartTypeSelector value={chartTypeAvaliacao} onChange={setChartTypeAvaliacao} />}
+        >
+          <FlexibleChart
+            data={avaliacaoData}
+            type={chartTypeAvaliacao}
+            height={320}
+            colors={avaliacaoColors}
+            showLegend
+            tooltipLabel="Matérias"
+          />
         </ChartCard>
       </div>
 
       {/* Timeline Chart */}
-      <ChartCard title="Linha do Tempo das Avaliações" description="Evolução diária do sentimento">
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={timelineAvaliacaoData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} interval="preserveStartEnd" />
-              <YAxis tickFormatter={(v) => v.toLocaleString('pt-BR')} />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend />
-              <Area
-                type="monotone"
-                dataKey="Positiva"
-                stackId="1"
-                stroke={COLORS.positiva}
-                fill={COLORS.positiva}
-                fillOpacity={0.8}
-              />
-              <Area
-                type="monotone"
-                dataKey="Negativa"
-                stackId="1"
-                stroke={COLORS.negativa}
-                fill={COLORS.negativa}
-                fillOpacity={0.8}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
+      <ChartCard 
+        title="Linha do Tempo das Avaliações" 
+        description="Evolução diária do sentimento"
+        headerContent={<ChartTypeSelector value={chartTypeTimeline} onChange={setChartTypeTimeline} options={['area', 'bar', 'stacked']} />}
+      >
+        <FlexibleChart
+          data={timelineAvaliacaoData}
+          type={chartTypeTimeline}
+          height={320}
+          stackedKeys={stackedKeys}
+          showLegend
+          tooltipLabel="Matérias"
+        />
       </ChartCard>
 
       {/* Narrativas x Avaliações */}
-      <ChartCard title="Narrativas x Avaliações" description="Top 10 temas por sentimento">
-        <div className="h-96">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={narrativasAvaliacaoData}
-              layout="vertical"
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
-              <XAxis type="number" tickFormatter={(v) => v.toLocaleString('pt-BR')} />
-              <YAxis 
-                type="category" 
-                dataKey="name" 
-                width={180} 
-                tick={{ fontSize: 11 }} 
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend />
-              <Bar dataKey="Negativa" stackId="a" fill={COLORS.negativa} />
-              <Bar dataKey="Positiva" stackId="a" fill={COLORS.positiva} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+      <ChartCard 
+        title="Narrativas x Avaliações" 
+        description="Top 10 temas por sentimento"
+        headerContent={<ChartTypeSelector value={chartTypeNarrativas} onChange={setChartTypeNarrativas} options={['stackedHorizontal', 'stacked', 'bar']} />}
+      >
+        <FlexibleChart
+          data={narrativasAvaliacaoData}
+          type={chartTypeNarrativas}
+          height={384}
+          stackedKeys={stackedKeys}
+          showLegend
+          leftMargin={200}
+          yAxisWidth={180}
+          tooltipLabel="Matérias"
+        />
       </ChartCard>
 
       {/* Veículos x Avaliações */}
-      <ChartCard title="Veículos x Avaliações" description="Top 10 veículos por sentimento">
-        <div className="h-96">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={veiculosAvaliacaoData}
-              layout="vertical"
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
-              <XAxis type="number" tickFormatter={(v) => v.toLocaleString('pt-BR')} />
-              <YAxis 
-                type="category" 
-                dataKey="name" 
-                width={180} 
-                tick={{ fontSize: 11 }} 
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend />
-              <Bar dataKey="Negativa" stackId="a" fill={COLORS.negativa} />
-              <Bar dataKey="Positiva" stackId="a" fill={COLORS.positiva} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+      <ChartCard 
+        title="Veículos x Avaliações" 
+        description="Top 10 veículos por sentimento"
+        headerContent={<ChartTypeSelector value={chartTypeVeiculos} onChange={setChartTypeVeiculos} options={['stackedHorizontal', 'stacked', 'bar']} />}
+      >
+        <FlexibleChart
+          data={veiculosAvaliacaoData}
+          type={chartTypeVeiculos}
+          height={384}
+          stackedKeys={stackedKeys}
+          showLegend
+          leftMargin={200}
+          yAxisWidth={180}
+          tooltipLabel="Matérias"
+        />
       </ChartCard>
     </div>
   );

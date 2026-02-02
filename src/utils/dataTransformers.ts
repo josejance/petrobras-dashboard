@@ -88,10 +88,10 @@ export function groupByFieldSum(
 }
 
 // Convert grouped data to chart format
-export function toChartData(grouped: Record<string, number>, nameKey = 'name', valueKey = 'value') {
+export function toChartData(grouped: Record<string, number>): { name: string; value: number }[] {
   return Object.entries(grouped)
-    .map(([name, value]) => ({ [nameKey]: name, [valueKey]: value }))
-    .sort((a, b) => (b[valueKey] as number) - (a[valueKey] as number));
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value);
 }
 
 // Group by date for timeline charts
