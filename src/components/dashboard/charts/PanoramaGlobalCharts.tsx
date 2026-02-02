@@ -30,7 +30,7 @@ interface PanoramaGlobalChartsProps {
 export function PanoramaGlobalCharts({ data }: PanoramaGlobalChartsProps) {
   const [chartTypeMateriasAvaliacao, setChartTypeMateriasAvaliacao] = useState<ChartType>('stackedHorizontal');
   const [chartTypeAvaliacao, setChartTypeAvaliacao] = useState<ChartType>('pie');
-  const [chartTypeTimeline, setChartTypeTimeline] = useState<ChartType>('area');
+  const [chartTypeTimeline, setChartTypeTimeline] = useState<ChartType>('stacked');
   const [chartTypeNarrativas, setChartTypeNarrativas] = useState<ChartType>('stackedHorizontal');
   const [chartTypeVeiculos, setChartTypeVeiculos] = useState<ChartType>('stackedHorizontal');
 
