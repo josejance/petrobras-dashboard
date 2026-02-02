@@ -3,18 +3,7 @@ import { Materia } from '@/hooks/useMaterias';
 import { ChartCard } from './ChartCard';
 import { ChartTypeSelector, ChartType } from './ChartTypeSelector';
 import { FlexibleChart } from './FlexibleChart';
-import { groupByField, toChartData, parseDate, parseValue } from '@/utils/dataTransformers';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from 'recharts';
+import { groupByField, toChartData } from '@/utils/dataTransformers';
 
 interface SentimentChartsProps {
   data: Materia[];
@@ -33,7 +22,6 @@ const SENTIMENT_COLORS: Record<string, string> = {
 
 export function SentimentCharts({ data }: SentimentChartsProps) {
   const [chartTypeAvaliacao, setChartTypeAvaliacao] = useState<ChartType>('pie');
-  const [chartTypeTendencia, setChartTypeTendencia] = useState<ChartType>('area');
 
   // Avaliação distribution (usando coluna Avaliação)
   const avaliacaoData = toChartData(groupByField(data, 'Avaliação')).map(item => ({
@@ -53,32 +41,6 @@ export function SentimentCharts({ data }: SentimentChartsProps) {
   ).length;
   const total = data.length;
   const percentPositivo = total > 0 ? (positivas / total) * 100 : 0;
-
-  // Vn index by month (usando coluna Vn em vez de K)
-  const vnByMonth = data.reduce((acc, item) => {
-    const date = parseDate(item.Data);
-    if (!date) return acc;
-    
-    const key = format(date, 'yyyy-MM');
-    const displayMonth = format(date, 'MMM/yy', { locale: ptBR });
-    const vnValue = parseValue(item.Vn);
-    
-    if (!acc[key]) {
-      acc[key] = { month: key, displayMonth, totalVn: 0, count: 0 };
-    }
-    if (item.Vn !== null && item.Vn !== undefined && item.Vn !== '') {
-      acc[key].totalVn += vnValue;
-      acc[key].count += 1;
-    }
-    return acc;
-  }, {} as Record<string, { month: string; displayMonth: string; totalVn: number; count: number }>);
-
-  const vnTrendData = Object.values(vnByMonth)
-    .sort((a, b) => a.month.localeCompare(b.month))
-    .map(item => ({
-      name: item.displayMonth,
-      value: item.count > 0 ? item.totalVn / item.count : 0,
-    }));
 
   return (
     <div className="space-y-6">
@@ -138,21 +100,6 @@ export function SentimentCharts({ data }: SentimentChartsProps) {
             </div>
           </div>
         </div>
-      </ChartCard>
-
-      <ChartCard 
-        title="Tendência do Índice Vn" 
-        description="Evolução média do índice Vn por mês"
-        headerContent={<ChartTypeSelector value={chartTypeTendencia} onChange={setChartTypeTendencia} />}
-      >
-        <FlexibleChart
-          data={vnTrendData}
-          type={chartTypeTendencia}
-          height={280}
-          color="hsl(262, 83%, 58%)"
-          valueFormatter={(v) => v.toFixed(2)}
-          tooltipLabel="Média Vn"
-        />
       </ChartCard>
     </div>
   );
