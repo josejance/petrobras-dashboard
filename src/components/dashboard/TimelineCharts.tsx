@@ -35,7 +35,7 @@ const metricaDescriptions: Record<Metrica, string> = {
 };
 
 export function TimelineCharts({ data }: TimelineChartsProps) {
-  const [granularidade, setGranularidade] = useState<Granularidade>('mes');
+  const [granularidade, setGranularidade] = useState<Granularidade>('dia');
   const [metrica, setMetrica] = useState<Metrica>('volume');
 
   const chartData = useMemo(() => {
