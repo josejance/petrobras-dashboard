@@ -51,15 +51,30 @@ export function formatCurrency(value: number | null | undefined): string {
 export function formatCompact(value: number): string {
   const num = typeof value === 'number' && !isNaN(value) ? value : 0;
   if (num >= 1_000_000_000) {
-    return `${(num / 1_000_000_000).toFixed(1)}B`;
+    return `${(num / 1_000_000_000).toFixed(1).replace('.', ',')} Bi`;
   }
   if (num >= 1_000_000) {
-    return `${(num / 1_000_000).toFixed(1)}M`;
+    return `${(num / 1_000_000).toFixed(1).replace('.', ',')} Mi`;
   }
   if (num >= 1_000) {
-    return `${(num / 1_000).toFixed(1)}K`;
+    return `${(num / 1_000).toFixed(1).replace('.', ',')} K`;
   }
   return num.toFixed(0);
+}
+
+// Format currency in compact form (R$ 45,6 Mi)
+export function formatCurrencyCompact(value: number): string {
+  const num = typeof value === 'number' && !isNaN(value) ? value : 0;
+  if (num >= 1_000_000_000) {
+    return `R$ ${(num / 1_000_000_000).toFixed(1).replace('.', ',')} Bi`;
+  }
+  if (num >= 1_000_000) {
+    return `R$ ${(num / 1_000_000).toFixed(1).replace('.', ',')} Mi`;
+  }
+  if (num >= 1_000) {
+    return `R$ ${(num / 1_000).toFixed(1).replace('.', ',')} K`;
+  }
+  return formatCurrency(num);
 }
 
 // Group data by a field and count
