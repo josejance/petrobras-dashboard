@@ -31,7 +31,7 @@ export function MetricsCards({ data }: MetricsCardsProps) {
     },
     {
       title: 'VMN Total',
-      value: formatCompact(totalVMN),
+      value: `R$ ${formatCompact(totalVMN)}`,
       subtitle: formatCurrency(totalVMN),
       icon: BarChart3,
       color: 'text-purple-600',
