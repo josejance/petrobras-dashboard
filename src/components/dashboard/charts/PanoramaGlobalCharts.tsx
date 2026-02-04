@@ -3,7 +3,7 @@ import { Materia } from '@/hooks/useMaterias';
 import { ChartCard } from '@/components/dashboard/ChartCard';
 import { ChartTypeSelector, ChartType } from '@/components/dashboard/ChartTypeSelector';
 import { FlexibleChart } from '@/components/dashboard/FlexibleChart';
-import { parseValue, parseDate, formatCurrency, groupByField } from '@/utils/dataTransformers';
+import { parseValue, parseDate, formatCurrencyCompact, groupByField } from '@/utils/dataTransformers';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -214,7 +214,7 @@ export function PanoramaGlobalCharts({ data }: PanoramaGlobalChartsProps) {
         <div className="bg-background border rounded-lg p-6">
           <p className="text-sm text-muted-foreground mb-1">Valoração Total (VMN)</p>
           <p className={`text-4xl font-bold ${somaVMN >= 0 ? 'text-[#2E7D32]' : 'text-[#F57C00]'}`}>
-            {formatCurrency(somaVMN)}
+            {formatCurrencyCompact(somaVMN)}
           </p>
         </div>
       </div>
