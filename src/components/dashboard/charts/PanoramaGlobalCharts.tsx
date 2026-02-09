@@ -219,38 +219,37 @@ export function PanoramaGlobalCharts({ data }: PanoramaGlobalChartsProps) {
         </div>
       </div>
 
-      {/* Charts Row 1: Matérias x Avaliação + Pizza */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ChartCard 
-          title="Abrangência" 
-          description="Distribuição por abrangência"
-          headerContent={<ChartTypeSelector value={chartTypeMateriasAvaliacao} onChange={setChartTypeMateriasAvaliacao} options={['stackedHorizontal', 'stacked', 'bar']} />}
-        >
-          <FlexibleChart
-            data={materiasAvaliacaoData}
-            type={chartTypeMateriasAvaliacao}
-            height={320}
-            stackedKeys={stackedKeys}
-            showLegend
-            tooltipLabel="Matérias"
-          />
-        </ChartCard>
+      {/* Abrangência */}
+      <ChartCard 
+        title="Abrangência" 
+        description="Distribuição por abrangência"
+        headerContent={<ChartTypeSelector value={chartTypeMateriasAvaliacao} onChange={setChartTypeMateriasAvaliacao} options={['stackedHorizontal', 'stacked', 'bar']} />}
+      >
+        <FlexibleChart
+          data={materiasAvaliacaoData}
+          type={chartTypeMateriasAvaliacao}
+          height={320}
+          stackedKeys={stackedKeys}
+          showLegend
+          tooltipLabel="Matérias"
+        />
+      </ChartCard>
 
-        <ChartCard 
-          title="Avaliação" 
-          description="Distribuição geral"
-          headerContent={<ChartTypeSelector value={chartTypeAvaliacao} onChange={setChartTypeAvaliacao} />}
-        >
-          <FlexibleChart
-            data={avaliacaoData}
-            type={chartTypeAvaliacao}
-            height={320}
-            colors={avaliacaoColors}
-            showLegend
-            tooltipLabel="Matérias"
-          />
-        </ChartCard>
-      </div>
+      {/* Avaliação */}
+      <ChartCard 
+        title="Avaliação" 
+        description="Distribuição geral"
+        headerContent={<ChartTypeSelector value={chartTypeAvaliacao} onChange={setChartTypeAvaliacao} />}
+      >
+        <FlexibleChart
+          data={avaliacaoData}
+          type={chartTypeAvaliacao}
+          height={320}
+          colors={avaliacaoColors}
+          showLegend
+          tooltipLabel="Matérias"
+        />
+      </ChartCard>
 
       {/* Timeline Chart */}
       <ChartCard 
