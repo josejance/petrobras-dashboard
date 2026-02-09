@@ -36,6 +36,7 @@ export default function Dashboard() {
   const [pendingFonte, setPendingFonte] = useState<string[]>([]);
   const [pendingVeiculo, setPendingVeiculo] = useState<string[]>([]);
   const [pendingAbrangencia, setPendingAbrangencia] = useState<string[]>([]);
+  const [pendingAvaliacao, setPendingAvaliacao] = useState<string[]>([]);
 
   // Filtros de dimensão (aplicados)
   const [appliedUf, setAppliedUf] = useState<string[]>([]);
@@ -44,6 +45,7 @@ export default function Dashboard() {
   const [appliedFonte, setAppliedFonte] = useState<string[]>([]);
   const [appliedVeiculo, setAppliedVeiculo] = useState<string[]>([]);
   const [appliedAbrangencia, setAppliedAbrangencia] = useState<string[]>([]);
+  const [appliedAvaliacao, setAppliedAvaliacao] = useState<string[]>([]);
   
   const [activeSection, setActiveSection] = useState('kpis');
   
@@ -51,7 +53,7 @@ export default function Dashboard() {
 
   // Opções únicas para cada filtro
   const filterOptions = useMemo(() => {
-    if (!materias) return { ufs: [], temas: [], jornalistas: [], fontes: [], veiculos: [], abrangencias: [] };
+    if (!materias) return { ufs: [], temas: [], jornalistas: [], fontes: [], veiculos: [], abrangencias: [], avaliacoes: [] };
     const unique = (field: string) => 
       [...new Set(materias.map(m => String(m[field] || '').trim()).filter(Boolean))].sort();
     return {
@@ -61,6 +63,7 @@ export default function Dashboard() {
       fontes: unique('Fonte'),
       veiculos: unique('Veiculo'),
       abrangencias: unique('Abrangência'),
+      avaliacoes: unique('Avaliação'),
     };
   }, [materias]);
 
@@ -71,7 +74,8 @@ export default function Dashboard() {
     || JSON.stringify(pendingJornalista) !== JSON.stringify(appliedJornalista)
     || JSON.stringify(pendingFonte) !== JSON.stringify(appliedFonte)
     || JSON.stringify(pendingVeiculo) !== JSON.stringify(appliedVeiculo)
-    || JSON.stringify(pendingAbrangencia) !== JSON.stringify(appliedAbrangencia);
+    || JSON.stringify(pendingAbrangencia) !== JSON.stringify(appliedAbrangencia)
+    || JSON.stringify(pendingAvaliacao) !== JSON.stringify(appliedAvaliacao);
 
   const filteredMaterias = useMemo(() => {
     if (!materias) return [];
@@ -89,10 +93,11 @@ export default function Dashboard() {
       if (appliedFonte.length > 0 && !appliedFonte.includes(String(item.Fonte || '').trim())) return false;
       if (appliedVeiculo.length > 0 && !appliedVeiculo.includes(String(item.Veiculo || '').trim())) return false;
       if (appliedAbrangencia.length > 0 && !appliedAbrangencia.includes(String(item.Abrangência || '').trim())) return false;
+      if (appliedAvaliacao.length > 0 && !appliedAvaliacao.includes(String(item.Avaliação || '').trim())) return false;
       
       return true;
     });
-  }, [materias, appliedStartDate, appliedEndDate, appliedUf, appliedTema, appliedJornalista, appliedFonte, appliedVeiculo, appliedAbrangencia]);
+  }, [materias, appliedStartDate, appliedEndDate, appliedUf, appliedTema, appliedJornalista, appliedFonte, appliedVeiculo, appliedAbrangencia, appliedAvaliacao]);
 
   const handleApplyFilters = () => {
     setAppliedStartDate(pendingStartDate);
@@ -103,6 +108,7 @@ export default function Dashboard() {
     setAppliedFonte([...pendingFonte]);
     setAppliedVeiculo([...pendingVeiculo]);
     setAppliedAbrangencia([...pendingAbrangencia]);
+    setAppliedAvaliacao([...pendingAvaliacao]);
   };
 
   const handleClearFilters = () => {
@@ -110,8 +116,8 @@ export default function Dashboard() {
     setPendingEndDate(undefined);
     setAppliedStartDate(undefined);
     setAppliedEndDate(undefined);
-    setPendingUf([]); setPendingTema([]); setPendingJornalista([]); setPendingFonte([]); setPendingVeiculo([]); setPendingAbrangencia([]);
-    setAppliedUf([]); setAppliedTema([]); setAppliedJornalista([]); setAppliedFonte([]); setAppliedVeiculo([]); setAppliedAbrangencia([]);
+    setPendingUf([]); setPendingTema([]); setPendingJornalista([]); setPendingFonte([]); setPendingVeiculo([]); setPendingAbrangencia([]); setPendingAvaliacao([]);
+    setAppliedUf([]); setAppliedTema([]); setAppliedJornalista([]); setAppliedFonte([]); setAppliedVeiculo([]); setAppliedAbrangencia([]); setAppliedAvaliacao([]);
   };
 
   const handleNavigate = useCallback((sectionId: string) => {
@@ -237,6 +243,7 @@ export default function Dashboard() {
               <MultiSelectFilter label="Fonte" options={filterOptions.fontes} selected={pendingFonte} onChange={setPendingFonte} searchFirst />
               <MultiSelectFilter label="Veículo" options={filterOptions.veiculos} selected={pendingVeiculo} onChange={setPendingVeiculo} searchFirst />
               <MultiSelectFilter label="Abrangência" options={filterOptions.abrangencias} selected={pendingAbrangencia} onChange={setPendingAbrangencia} searchFirst />
+              <MultiSelectFilter label="Avaliação" options={filterOptions.avaliacoes} selected={pendingAvaliacao} onChange={setPendingAvaliacao} searchFirst />
             </div>
           </div>
         </header>

@@ -15,21 +15,23 @@ export function VeiculosCharts({ data }: VeiculosChartsProps) {
   const veiculoData = Object.entries(groupByField(data, 'Veiculo'))
     .map(([name, count]) => ({ name, value: count }))
     .sort((a, b) => b.value - a.value)
-    .slice(0, 15);
+    .slice(0, 10);
 
   return (
     <div className="space-y-6">
       <ChartCard 
-        title="Top 15 Veículos por Volume" 
+        title="Top 10 Veículos por Volume" 
         description="Veículos com mais matérias"
         headerContent={<ChartTypeSelector value={chartType1} onChange={setChartType1} />}
       >
         <FlexibleChart
           data={veiculoData}
           type={chartType1}
-          height={320}
+          height={400}
           color="hsl(221, 83%, 53%)"
           tooltipLabel="Matérias"
+          leftMargin={200}
+          yAxisWidth={190}
         />
       </ChartCard>
     </div>
