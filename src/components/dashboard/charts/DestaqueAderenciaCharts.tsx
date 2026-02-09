@@ -87,8 +87,8 @@ export function DestaqueAderenciaCharts({ data }: DestaqueAderenciaChartsProps) 
     };
   }, [data]);
 
-  const DESTAQUE_COLORS = ['hsl(221, 83%, 53%)', 'hsl(142, 71%, 45%)', 'hsl(38, 92%, 50%)', 'hsl(0, 84%, 60%)', 'hsl(262, 83%, 58%)'];
-  const ADERENCIA_COLORS = ['hsl(24, 95%, 53%)', 'hsl(142, 71%, 45%)', 'hsl(221, 83%, 53%)', 'hsl(38, 92%, 50%)', 'hsl(262, 83%, 58%)'];
+  const DESTAQUE_COLORS = ['#2E7D32', '#F57C00', '#9E9E9E', '#1B5E20', '#E65100'];
+  const ADERENCIA_COLORS = ['#2E7D32', '#F57C00', '#4CAF50', '#FF9800', '#9E9E9E'];
 
   const destaqueStackedKeys = destaqueTimelineData.keys.map((key, i) => ({
     key,
