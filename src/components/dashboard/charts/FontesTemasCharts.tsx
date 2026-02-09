@@ -12,38 +12,46 @@ interface FontesTemasChartsProps {
 export function FontesTemasCharts({ data }: FontesTemasChartsProps) {
   const [chartType1, setChartType1] = useState<ChartType>('barHorizontal');
   const [chartType2, setChartType2] = useState<ChartType>('barHorizontal');
-  const [chartType3, setChartType3] = useState<ChartType>('stacked');
+  const [chartTypeJornalistas, setChartTypeJornalistas] = useState<ChartType>('barHorizontal');
+  const [chartTypeColunistas, setChartTypeColunistas] = useState<ChartType>('barHorizontal');
 
   const temaData = toChartData(groupByField(data, 'Temas')).slice(0, 10);
   const fonteData = toChartData(groupByField(data, 'Fonte'))
     .filter(item => item.name !== 'Não informado' && item.name !== '')
     .slice(0, 10);
 
-  // Destaque x Avaliação
-  const destaqueAvaliacaoData = (() => {
-    const result: Record<string, { name: string; Positivas: number; Negativas: number }> = {};
-    
+  // Jornalistas ranking (autor field, filtering out empty)
+  const jornalistaData = (() => {
+    const grouped: Record<string, number> = {};
     data.forEach(item => {
-      const destaque = item.Destaque || 'Não informado';
-      if (!result[destaque]) {
-        result[destaque] = { name: destaque, Positivas: 0, Negativas: 0 };
-      }
-      
-      const teor = item.Teor || '';
-      if (teor.toLowerCase().includes('positiva')) {
-        result[destaque].Positivas += 1;
-      } else if (teor.toLowerCase().includes('negativa')) {
-        result[destaque].Negativas += 1;
-      }
+      const autor = String(item.autor || '').trim();
+      if (!autor) return;
+      // Exclude entries that look like columnist type
+      const tipo = String(item.Tipo || '').trim().toLowerCase();
+      if (tipo === 'coluna' || tipo === 'artigo') return;
+      grouped[autor] = (grouped[autor] || 0) + 1;
     });
-    
-    return Object.values(result);
+    return Object.entries(grouped)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 10);
   })();
 
-  const stackedKeys = [
-    { key: 'Positivas', color: 'hsl(142, 71%, 45%)' },
-    { key: 'Negativas', color: 'hsl(0, 84%, 60%)' },
-  ];
+  // Colunistas ranking (autor field, only Coluna/Artigo types)
+  const colunistaData = (() => {
+    const grouped: Record<string, number> = {};
+    data.forEach(item => {
+      const autor = String(item.autor || '').trim();
+      if (!autor) return;
+      const tipo = String(item.Tipo || '').trim().toLowerCase();
+      if (tipo !== 'coluna' && tipo !== 'artigo') return;
+      grouped[autor] = (grouped[autor] || 0) + 1;
+    });
+    return Object.entries(grouped)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 10);
+  })();
 
   return (
     <div className="space-y-6">
@@ -80,17 +88,34 @@ export function FontesTemasCharts({ data }: FontesTemasChartsProps) {
       </ChartCard>
 
       <ChartCard 
-        title="Destaque x Avaliação" 
-        description="Nível de destaque por sentimento"
-        headerContent={<ChartTypeSelector value={chartType3} onChange={setChartType3} options={['stacked', 'stackedHorizontal', 'bar']} />}
+        title="Top 10 Jornalistas" 
+        description="Jornalistas com mais matérias"
+        headerContent={<ChartTypeSelector value={chartTypeJornalistas} onChange={setChartTypeJornalistas} />}
       >
         <FlexibleChart
-          data={destaqueAvaliacaoData}
-          type={chartType3}
-          height={256}
-          stackedKeys={stackedKeys}
-          showLegend
+          data={jornalistaData}
+          type={chartTypeJornalistas}
+          height={400}
+          color="hsl(221, 83%, 53%)"
           tooltipLabel="Matérias"
+          leftMargin={200}
+          yAxisWidth={190}
+        />
+      </ChartCard>
+
+      <ChartCard 
+        title="Top 10 Colunistas" 
+        description="Colunistas com mais publicações"
+        headerContent={<ChartTypeSelector value={chartTypeColunistas} onChange={setChartTypeColunistas} />}
+      >
+        <FlexibleChart
+          data={colunistaData}
+          type={chartTypeColunistas}
+          height={400}
+          color="hsl(38, 92%, 50%)"
+          tooltipLabel="Publicações"
+          leftMargin={200}
+          yAxisWidth={190}
         />
       </ChartCard>
     </div>
