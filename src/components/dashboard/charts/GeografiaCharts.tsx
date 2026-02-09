@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Materia } from '@/hooks/useMaterias';
 import { ChartCard } from '../ChartCard';
 import { ChartTypeSelector, ChartType } from '../ChartTypeSelector';
 import { FlexibleChart } from '../FlexibleChart';
+import { BrazilMap } from '../BrazilMap';
 import { groupByField } from '@/utils/dataTransformers';
 
 interface GeografiaChartsProps {
@@ -12,13 +13,25 @@ interface GeografiaChartsProps {
 export function GeografiaCharts({ data }: GeografiaChartsProps) {
   const [chartType1, setChartType1] = useState<ChartType>('barHorizontal');
 
-  const ufData = Object.entries(groupByField(data, 'uf'))
-    .map(([name, count]) => ({ name, value: count }))
-    .sort((a, b) => b.value - a.value)
-    .slice(0, 15);
+  const ufGrouped = useMemo(() => groupByField(data, 'uf'), [data]);
+
+  const ufData = useMemo(() => 
+    Object.entries(ufGrouped)
+      .map(([name, count]) => ({ name, value: count }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 15),
+    [ufGrouped]
+  );
 
   return (
     <div className="space-y-6">
+      <ChartCard 
+        title="Mapa de Cobertura por UF" 
+        description="Distribuição geográfica das matérias no Brasil"
+      >
+        <BrazilMap data={ufGrouped} height={400} />
+      </ChartCard>
+
       <ChartCard 
         title="Top 15 Estados por Volume" 
         description="Distribuição geográfica por UF"
