@@ -222,7 +222,7 @@ export function PanoramaGlobalCharts({ data }: PanoramaGlobalChartsProps) {
       {/* Charts Row 1: Matérias x Avaliação + Pizza */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ChartCard 
-          title="Matérias x Avaliação" 
+          title="Abrangência" 
           description="Distribuição por abrangência"
           headerContent={<ChartTypeSelector value={chartTypeMateriasAvaliacao} onChange={setChartTypeMateriasAvaliacao} options={['stackedHorizontal', 'stacked', 'bar']} />}
         >
