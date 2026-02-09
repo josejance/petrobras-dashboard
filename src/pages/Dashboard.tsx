@@ -1,6 +1,6 @@
 import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import { useMaterias } from '@/hooks/useMaterias';
-import { MetricsCards } from '@/components/dashboard/MetricsCards';
+
 import { TimelineCharts } from '@/components/dashboard/TimelineCharts';
 import { SentimentCharts } from '@/components/dashboard/SentimentCharts';
 import { DateRangeFilter } from '@/components/dashboard/DateRangeFilter';
@@ -190,14 +190,6 @@ export default function Dashboard() {
             <PanoramaGlobalCharts data={filteredMaterias} />
           </DashboardSection>
 
-          <DashboardSection
-            ref={(el) => { sectionRefs.current['kpis'] = el; }}
-            id="kpis"
-            title="Visão Geral"
-            description="Principais indicadores de desempenho"
-          >
-            <MetricsCards data={filteredMaterias} />
-          </DashboardSection>
 
           <DashboardSection
             ref={(el) => { sectionRefs.current['timeline'] = el; }}

@@ -20,7 +20,7 @@ export interface SectionConfig {
 
 export const DASHBOARD_SECTIONS: SectionConfig[] = [
   { id: 'panorama', label: 'Panorama Global', icon: Globe },
-  { id: 'kpis', label: 'Visão Geral', icon: LayoutDashboard },
+  
   { id: 'timeline', label: 'Evolução Temporal', icon: TrendingUp },
   { id: 'midia', label: 'Por Mídia', icon: Newspaper },
   { id: 'veiculos', label: 'Por Veículos', icon: Building2 },
