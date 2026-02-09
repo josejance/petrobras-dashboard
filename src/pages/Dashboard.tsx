@@ -226,9 +226,9 @@ export default function Dashboard() {
 
             <div className="flex flex-wrap items-center gap-2">
               <MultiSelectFilter label="UF" options={filterOptions.ufs} selected={pendingUf} onChange={setPendingUf} />
-              <MultiSelectFilter label="Tema" options={filterOptions.temas} selected={pendingTema} onChange={setPendingTema} />
-              <MultiSelectFilter label="Jornalista" options={filterOptions.jornalistas} selected={pendingJornalista} onChange={setPendingJornalista} />
-              <MultiSelectFilter label="Fonte" options={filterOptions.fontes} selected={pendingFonte} onChange={setPendingFonte} />
+              <MultiSelectFilter label="Tema" options={filterOptions.temas} selected={pendingTema} onChange={setPendingTema} searchFirst />
+              <MultiSelectFilter label="Jornalista" options={filterOptions.jornalistas} selected={pendingJornalista} onChange={setPendingJornalista} searchFirst />
+              <MultiSelectFilter label="Fonte" options={filterOptions.fontes} selected={pendingFonte} onChange={setPendingFonte} searchFirst />
               <MultiSelectFilter label="Veículo" options={filterOptions.veiculos} selected={pendingVeiculo} onChange={setPendingVeiculo} />
             </div>
           </div>
