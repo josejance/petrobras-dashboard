@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Materia } from '@/hooks/useMaterias';
 import { ChartCard } from './ChartCard';
 import { ChartTypeSelector, ChartType } from './ChartTypeSelector';
@@ -10,20 +10,19 @@ interface SentimentChartsProps {
 }
 
 const SENTIMENT_COLORS: Record<string, string> = {
-  'Muito Positiva': 'hsl(142, 76%, 36%)',
-  'Positiva': 'hsl(142, 71%, 45%)',
-  'Pouco positiva': 'hsl(142, 50%, 55%)',
-  'Pouco Positiva': 'hsl(142, 50%, 55%)',
-  'Negativa': 'hsl(0, 84%, 60%)',
-  'Muito Negativa': 'hsl(0, 72%, 51%)',
-  'Pouco Negativa': 'hsl(0, 60%, 70%)',
-  'Não informado': 'hsl(220, 14%, 80%)',
+  'Muito Positiva': '#1B5E20',
+  'Positiva': '#2E7D32',
+  'Pouco positiva': '#4CAF50',
+  'Pouco Positiva': '#4CAF50',
+  'Negativa': '#F57C00',
+  'Muito Negativa': '#E65100',
+  'Pouco Negativa': '#FF9800',
+  'Não informado': '#9E9E9E',
 };
 
 export function SentimentCharts({ data }: SentimentChartsProps) {
   const [chartTypeAvaliacao, setChartTypeAvaliacao] = useState<ChartType>('pie');
 
-  // Avaliação distribution (usando coluna Avaliação)
   const avaliacaoData = toChartData(groupByField(data, 'Avaliação')).map(item => ({
     name: item.name,
     value: item.value,
@@ -32,7 +31,7 @@ export function SentimentCharts({ data }: SentimentChartsProps) {
 
   const avaliacaoColors = avaliacaoData.map(d => d.color);
 
-  // Calculate overall sentiment gauge (usando coluna Avaliação)
+  // Calculate sentiment summary for the legend
   const positivas = data.filter(item => 
     item.Avaliação?.toLowerCase().includes('positiva')
   ).length;
@@ -57,47 +56,14 @@ export function SentimentCharts({ data }: SentimentChartsProps) {
           showLegend
           tooltipLabel="Matérias"
         />
-      </ChartCard>
-
-      <ChartCard title="Índice de Sentimento" description="Panorama geral positivo vs negativo">
-        <div className="h-72 flex flex-col items-center justify-center">
-          <div className="relative w-48 h-48">
-            <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-              {/* Background circle */}
-              <circle
-                cx="50"
-                cy="50"
-                r="40"
-                fill="none"
-                stroke="hsl(var(--muted))"
-                strokeWidth="12"
-              />
-              {/* Positive arc */}
-              <circle
-                cx="50"
-                cy="50"
-                r="40"
-                fill="none"
-                stroke="hsl(142, 71%, 45%)"
-                strokeWidth="12"
-                strokeDasharray={`${percentPositivo * 2.51} 251.2`}
-                strokeLinecap="round"
-              />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-3xl font-bold">{percentPositivo.toFixed(0)}%</span>
-              <span className="text-sm text-muted-foreground">Positivo</span>
-            </div>
+        <div className="flex items-center justify-center gap-8 mt-4 pb-2 text-sm font-medium">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#2E7D32' }} />
+            <span>{positivas.toLocaleString('pt-BR')} positivas ({percentPositivo.toFixed(0)}%)</span>
           </div>
-          <div className="flex gap-6 mt-4 text-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-green-500" />
-              <span>{positivas} positivas</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-red-500" />
-              <span>{negativas} negativas</span>
-            </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#F57C00' }} />
+            <span>{negativas.toLocaleString('pt-BR')} negativas ({(100 - percentPositivo).toFixed(0)}%)</span>
           </div>
         </div>
       </ChartCard>
