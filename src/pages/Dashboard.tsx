@@ -12,6 +12,7 @@ import { GeografiaCharts } from '@/components/dashboard/charts/GeografiaCharts';
 import { FontesTemasCharts } from '@/components/dashboard/charts/FontesTemasCharts';
 import { PanoramaGlobalCharts } from '@/components/dashboard/charts/PanoramaGlobalCharts';
 import { ExportReportButton } from '@/components/dashboard/ExportReportButton';
+import { MultiSelectFilter } from '@/components/dashboard/MultiSelectFilter';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -27,31 +28,75 @@ export default function Dashboard() {
   // Datas aplicadas (usadas para filtrar)
   const [appliedStartDate, setAppliedStartDate] = useState<Date | undefined>();
   const [appliedEndDate, setAppliedEndDate] = useState<Date | undefined>();
+
+  // Filtros de dimensão (pendentes)
+  const [pendingUf, setPendingUf] = useState<string[]>([]);
+  const [pendingTema, setPendingTema] = useState<string[]>([]);
+  const [pendingJornalista, setPendingJornalista] = useState<string[]>([]);
+  const [pendingFonte, setPendingFonte] = useState<string[]>([]);
+  const [pendingVeiculo, setPendingVeiculo] = useState<string[]>([]);
+
+  // Filtros de dimensão (aplicados)
+  const [appliedUf, setAppliedUf] = useState<string[]>([]);
+  const [appliedTema, setAppliedTema] = useState<string[]>([]);
+  const [appliedJornalista, setAppliedJornalista] = useState<string[]>([]);
+  const [appliedFonte, setAppliedFonte] = useState<string[]>([]);
+  const [appliedVeiculo, setAppliedVeiculo] = useState<string[]>([]);
   
   const [activeSection, setActiveSection] = useState('kpis');
   
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
 
+  // Opções únicas para cada filtro
+  const filterOptions = useMemo(() => {
+    if (!materias) return { ufs: [], temas: [], jornalistas: [], fontes: [], veiculos: [] };
+    const unique = (field: string) => 
+      [...new Set(materias.map(m => String(m[field] || '').trim()).filter(Boolean))].sort();
+    return {
+      ufs: unique('uf'),
+      temas: unique('Temas'),
+      jornalistas: unique('Fonte'), // 'Fonte' is the journalist/source field
+      fontes: unique('Fonte'),
+      veiculos: unique('Veiculo'),
+    };
+  }, [materias]);
+
   // Verifica se há mudanças pendentes
-  const hasChanges = pendingStartDate !== appliedStartDate || pendingEndDate !== appliedEndDate;
+  const hasChanges = pendingStartDate !== appliedStartDate || pendingEndDate !== appliedEndDate
+    || JSON.stringify(pendingUf) !== JSON.stringify(appliedUf)
+    || JSON.stringify(pendingTema) !== JSON.stringify(appliedTema)
+    || JSON.stringify(pendingJornalista) !== JSON.stringify(appliedJornalista)
+    || JSON.stringify(pendingFonte) !== JSON.stringify(appliedFonte)
+    || JSON.stringify(pendingVeiculo) !== JSON.stringify(appliedVeiculo);
 
   const filteredMaterias = useMemo(() => {
     if (!materias) return [];
     
     return materias.filter(item => {
       const itemDate = parseDate(item.Data);
-      if (!itemDate) return true;
+      if (itemDate) {
+        if (appliedStartDate && itemDate < appliedStartDate) return false;
+        if (appliedEndDate && itemDate > appliedEndDate) return false;
+      }
       
-      if (appliedStartDate && itemDate < appliedStartDate) return false;
-      if (appliedEndDate && itemDate > appliedEndDate) return false;
+      if (appliedUf.length > 0 && !appliedUf.includes(String(item.uf || '').trim())) return false;
+      if (appliedTema.length > 0 && !appliedTema.includes(String(item.Temas || '').trim())) return false;
+      if (appliedJornalista.length > 0 && !appliedJornalista.includes(String(item.Fonte || '').trim())) return false;
+      if (appliedFonte.length > 0 && !appliedFonte.includes(String(item.Fonte || '').trim())) return false;
+      if (appliedVeiculo.length > 0 && !appliedVeiculo.includes(String(item.Veiculo || '').trim())) return false;
       
       return true;
     });
-  }, [materias, appliedStartDate, appliedEndDate]);
+  }, [materias, appliedStartDate, appliedEndDate, appliedUf, appliedTema, appliedJornalista, appliedFonte, appliedVeiculo]);
 
   const handleApplyFilters = () => {
     setAppliedStartDate(pendingStartDate);
     setAppliedEndDate(pendingEndDate);
+    setAppliedUf([...pendingUf]);
+    setAppliedTema([...pendingTema]);
+    setAppliedJornalista([...pendingJornalista]);
+    setAppliedFonte([...pendingFonte]);
+    setAppliedVeiculo([...pendingVeiculo]);
   };
 
   const handleClearFilters = () => {
@@ -59,6 +104,8 @@ export default function Dashboard() {
     setPendingEndDate(undefined);
     setAppliedStartDate(undefined);
     setAppliedEndDate(undefined);
+    setPendingUf([]); setPendingTema([]); setPendingJornalista([]); setPendingFonte([]); setPendingVeiculo([]);
+    setAppliedUf([]); setAppliedTema([]); setAppliedJornalista([]); setAppliedFonte([]); setAppliedVeiculo([]);
   };
 
   const handleNavigate = useCallback((sectionId: string) => {
@@ -176,6 +223,14 @@ export default function Dashboard() {
               onApply={handleApplyFilters}
               hasChanges={hasChanges}
             />
+
+            <div className="flex flex-wrap items-center gap-2">
+              <MultiSelectFilter label="UF" options={filterOptions.ufs} selected={pendingUf} onChange={setPendingUf} />
+              <MultiSelectFilter label="Tema" options={filterOptions.temas} selected={pendingTema} onChange={setPendingTema} />
+              <MultiSelectFilter label="Jornalista" options={filterOptions.jornalistas} selected={pendingJornalista} onChange={setPendingJornalista} />
+              <MultiSelectFilter label="Fonte" options={filterOptions.fontes} selected={pendingFonte} onChange={setPendingFonte} />
+              <MultiSelectFilter label="Veículo" options={filterOptions.veiculos} selected={pendingVeiculo} onChange={setPendingVeiculo} />
+            </div>
           </div>
         </header>
 
