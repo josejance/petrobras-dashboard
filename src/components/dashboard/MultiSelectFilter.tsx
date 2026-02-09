@@ -12,18 +12,21 @@ interface MultiSelectFilterProps {
   options: string[];
   selected: string[];
   onChange: (selected: string[]) => void;
+  /** When true, options only appear after the user types something */
+  searchFirst?: boolean;
 }
 
-export function MultiSelectFilter({ label, options, selected, onChange }: MultiSelectFilterProps) {
+export function MultiSelectFilter({ label, options, selected, onChange, searchFirst = false }: MultiSelectFilterProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
 
   const filtered = useMemo(() => {
+    if (searchFirst && !search) return [];
     if (!search) return options;
     const lower = search.toLowerCase();
     return options.filter(o => o.toLowerCase().includes(lower));
-  }, [options, search]);
+  }, [options, search, searchFirst]);
 
   const toggle = (value: string) => {
     onChange(
@@ -77,14 +80,20 @@ export function MultiSelectFilter({ label, options, selected, onChange }: MultiS
       {open && (
         <div className="absolute top-full left-0 mt-1 z-50 w-60 rounded-md border bg-popover p-2 shadow-md">
           <Input
-            placeholder="Buscar..."
+            placeholder={searchFirst ? "Digite para buscar..." : "Buscar..."}
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="h-7 text-xs mb-2"
           />
           <ScrollArea className="max-h-48">
             <div className="space-y-1">
-              {filtered.length === 0 && (
+              {searchFirst && !search && (
+                <p className="text-xs text-muted-foreground p-2">Digite para ver opções</p>
+              )}
+              {!searchFirst && filtered.length === 0 && (
+                <p className="text-xs text-muted-foreground p-2">Nenhum resultado</p>
+              )}
+              {searchFirst && search && filtered.length === 0 && (
                 <p className="text-xs text-muted-foreground p-2">Nenhum resultado</p>
               )}
               {filtered.map(option => (
