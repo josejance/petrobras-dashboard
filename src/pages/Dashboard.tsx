@@ -35,6 +35,7 @@ export default function Dashboard() {
   const [pendingJornalista, setPendingJornalista] = useState<string[]>([]);
   const [pendingFonte, setPendingFonte] = useState<string[]>([]);
   const [pendingVeiculo, setPendingVeiculo] = useState<string[]>([]);
+  const [pendingAbrangencia, setPendingAbrangencia] = useState<string[]>([]);
 
   // Filtros de dimensão (aplicados)
   const [appliedUf, setAppliedUf] = useState<string[]>([]);
@@ -42,6 +43,7 @@ export default function Dashboard() {
   const [appliedJornalista, setAppliedJornalista] = useState<string[]>([]);
   const [appliedFonte, setAppliedFonte] = useState<string[]>([]);
   const [appliedVeiculo, setAppliedVeiculo] = useState<string[]>([]);
+  const [appliedAbrangencia, setAppliedAbrangencia] = useState<string[]>([]);
   
   const [activeSection, setActiveSection] = useState('kpis');
   
@@ -49,15 +51,16 @@ export default function Dashboard() {
 
   // Opções únicas para cada filtro
   const filterOptions = useMemo(() => {
-    if (!materias) return { ufs: [], temas: [], jornalistas: [], fontes: [], veiculos: [] };
+    if (!materias) return { ufs: [], temas: [], jornalistas: [], fontes: [], veiculos: [], abrangencias: [] };
     const unique = (field: string) => 
       [...new Set(materias.map(m => String(m[field] || '').trim()).filter(Boolean))].sort();
     return {
       ufs: unique('uf'),
       temas: unique('Temas'),
-      jornalistas: unique('Fonte'), // 'Fonte' is the journalist/source field
+      jornalistas: unique('Fonte'),
       fontes: unique('Fonte'),
       veiculos: unique('Veiculo'),
+      abrangencias: unique('Abrangência'),
     };
   }, [materias]);
 
@@ -67,7 +70,8 @@ export default function Dashboard() {
     || JSON.stringify(pendingTema) !== JSON.stringify(appliedTema)
     || JSON.stringify(pendingJornalista) !== JSON.stringify(appliedJornalista)
     || JSON.stringify(pendingFonte) !== JSON.stringify(appliedFonte)
-    || JSON.stringify(pendingVeiculo) !== JSON.stringify(appliedVeiculo);
+    || JSON.stringify(pendingVeiculo) !== JSON.stringify(appliedVeiculo)
+    || JSON.stringify(pendingAbrangencia) !== JSON.stringify(appliedAbrangencia);
 
   const filteredMaterias = useMemo(() => {
     if (!materias) return [];
@@ -84,10 +88,11 @@ export default function Dashboard() {
       if (appliedJornalista.length > 0 && !appliedJornalista.includes(String(item.Fonte || '').trim())) return false;
       if (appliedFonte.length > 0 && !appliedFonte.includes(String(item.Fonte || '').trim())) return false;
       if (appliedVeiculo.length > 0 && !appliedVeiculo.includes(String(item.Veiculo || '').trim())) return false;
+      if (appliedAbrangencia.length > 0 && !appliedAbrangencia.includes(String(item.Abrangência || '').trim())) return false;
       
       return true;
     });
-  }, [materias, appliedStartDate, appliedEndDate, appliedUf, appliedTema, appliedJornalista, appliedFonte, appliedVeiculo]);
+  }, [materias, appliedStartDate, appliedEndDate, appliedUf, appliedTema, appliedJornalista, appliedFonte, appliedVeiculo, appliedAbrangencia]);
 
   const handleApplyFilters = () => {
     setAppliedStartDate(pendingStartDate);
@@ -97,6 +102,7 @@ export default function Dashboard() {
     setAppliedJornalista([...pendingJornalista]);
     setAppliedFonte([...pendingFonte]);
     setAppliedVeiculo([...pendingVeiculo]);
+    setAppliedAbrangencia([...pendingAbrangencia]);
   };
 
   const handleClearFilters = () => {
@@ -104,8 +110,8 @@ export default function Dashboard() {
     setPendingEndDate(undefined);
     setAppliedStartDate(undefined);
     setAppliedEndDate(undefined);
-    setPendingUf([]); setPendingTema([]); setPendingJornalista([]); setPendingFonte([]); setPendingVeiculo([]);
-    setAppliedUf([]); setAppliedTema([]); setAppliedJornalista([]); setAppliedFonte([]); setAppliedVeiculo([]);
+    setPendingUf([]); setPendingTema([]); setPendingJornalista([]); setPendingFonte([]); setPendingVeiculo([]); setPendingAbrangencia([]);
+    setAppliedUf([]); setAppliedTema([]); setAppliedJornalista([]); setAppliedFonte([]); setAppliedVeiculo([]); setAppliedAbrangencia([]);
   };
 
   const handleNavigate = useCallback((sectionId: string) => {
@@ -230,6 +236,7 @@ export default function Dashboard() {
               <MultiSelectFilter label="Jornalista" options={filterOptions.jornalistas} selected={pendingJornalista} onChange={setPendingJornalista} searchFirst />
               <MultiSelectFilter label="Fonte" options={filterOptions.fontes} selected={pendingFonte} onChange={setPendingFonte} searchFirst />
               <MultiSelectFilter label="Veículo" options={filterOptions.veiculos} selected={pendingVeiculo} onChange={setPendingVeiculo} searchFirst />
+              <MultiSelectFilter label="Abrangência" options={filterOptions.abrangencias} selected={pendingAbrangencia} onChange={setPendingAbrangencia} searchFirst />
             </div>
           </div>
         </header>
