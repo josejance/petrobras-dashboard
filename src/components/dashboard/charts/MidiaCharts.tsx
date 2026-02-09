@@ -47,49 +47,47 @@ export function MidiaCharts({ data }: MidiaChartsProps) {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-        <ChartCard 
-          title="Distribuição por Mídia" 
-          description="Tipo de veículo de comunicação"
-          headerContent={<ChartTypeSelector value={chartType1} onChange={setChartType1} />}
-        >
-          <FlexibleChart
-            data={midiaData}
-            type={chartType1}
-            height={256}
-            color="hsl(221, 83%, 53%)"
-            tooltipLabel="Matérias"
-          />
-        </ChartCard>
+      <ChartCard 
+        title="Distribuição por Mídia" 
+        description="Tipo de veículo de comunicação"
+        headerContent={<ChartTypeSelector value={chartType1} onChange={setChartType1} />}
+      >
+        <FlexibleChart
+          data={midiaData}
+          type={chartType1}
+          height={320}
+          color="hsl(221, 83%, 53%)"
+          tooltipLabel="Matérias"
+        />
+      </ChartCard>
 
-        <ChartCard 
-          title="Distribuição por Tipo" 
-          description="Tipo de matéria"
-          headerContent={<ChartTypeSelector value={chartType2} onChange={setChartType2} />}
-        >
-          <FlexibleChart
-            data={tipoData}
-            type={chartType2}
-            height={256}
-            color="hsl(262, 83%, 58%)"
-            tooltipLabel="Matérias"
-          />
-        </ChartCard>
+      <ChartCard 
+        title="Distribuição por Tipo" 
+        description="Tipo de matéria"
+        headerContent={<ChartTypeSelector value={chartType2} onChange={setChartType2} />}
+      >
+        <FlexibleChart
+          data={tipoData}
+          type={chartType2}
+          height={320}
+          color="hsl(262, 83%, 58%)"
+          tooltipLabel="Matérias"
+        />
+      </ChartCard>
 
-        <ChartCard 
-          title="Distribuição por Abrangência" 
-          description="Nacional, regional ou local"
-          headerContent={<ChartTypeSelector value={chartType3} onChange={setChartType3} />}
-        >
-          <FlexibleChart
-            data={abrangenciaData}
-            type={chartType3}
-            height={256}
-            color="hsl(24, 95%, 53%)"
-            tooltipLabel="Matérias"
-          />
-        </ChartCard>
-      </div>
+      <ChartCard 
+        title="Distribuição por Abrangência" 
+        description="Nacional, regional ou local"
+        headerContent={<ChartTypeSelector value={chartType3} onChange={setChartType3} />}
+      >
+        <FlexibleChart
+          data={abrangenciaData}
+          type={chartType3}
+          height={320}
+          color="hsl(24, 95%, 53%)"
+          tooltipLabel="Matérias"
+        />
+      </ChartCard>
 
       <ChartCard 
         title="Mídia x Avaliação" 
