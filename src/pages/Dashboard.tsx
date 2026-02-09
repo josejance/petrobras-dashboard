@@ -11,6 +11,7 @@ import { VeiculosCharts } from '@/components/dashboard/charts/VeiculosCharts';
 import { GeografiaCharts } from '@/components/dashboard/charts/GeografiaCharts';
 import { FontesTemasCharts } from '@/components/dashboard/charts/FontesTemasCharts';
 import { PanoramaGlobalCharts } from '@/components/dashboard/charts/PanoramaGlobalCharts';
+import { DestaqueAderenciaCharts } from '@/components/dashboard/charts/DestaqueAderenciaCharts';
 import { ExportReportButton } from '@/components/dashboard/ExportReportButton';
 import { MultiSelectFilter } from '@/components/dashboard/MultiSelectFilter';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -294,6 +295,15 @@ export default function Dashboard() {
             description="Distribuição por estados e abrangência"
           >
             <GeografiaCharts data={filteredMaterias} />
+          </DashboardSection>
+
+          <DashboardSection
+            ref={(el) => { sectionRefs.current['destaque'] = el; }}
+            id="destaque"
+            title="Destaque e Aderência"
+            description="Análise de nível de destaque e aderência das matérias"
+          >
+            <DestaqueAderenciaCharts data={filteredMaterias} />
           </DashboardSection>
 
           <DashboardSection

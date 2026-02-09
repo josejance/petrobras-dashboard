@@ -20,6 +20,10 @@ export interface Materia {
   Fonte: string;
   Destaque: string;
   VMN: string | number | null;
+  Aderência: string;
+  autor: string;
+  tipo_autor: string;
+  Narrativa: string;
   [key: string]: unknown;
 }
 

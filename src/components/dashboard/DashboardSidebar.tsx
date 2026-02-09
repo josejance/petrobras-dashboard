@@ -10,6 +10,7 @@ import {
   MapPin,
   Newspaper,
   Globe,
+  Star,
 } from 'lucide-react';
 
 export interface SectionConfig {
@@ -25,6 +26,7 @@ export const DASHBOARD_SECTIONS: SectionConfig[] = [
   { id: 'midia', label: 'Por Mídia', icon: Newspaper },
   { id: 'veiculos', label: 'Por Veículos', icon: Building2 },
   { id: 'geografia', label: 'Por Geografia', icon: MapPin },
+  { id: 'destaque', label: 'Destaque e Aderência', icon: Star },
   { id: 'cruzamentos', label: 'Cruzamentos', icon: GitBranch },
   { id: 'sentimento', label: 'Sentimento', icon: MessageSquare },
   { id: 'fontes', label: 'Fontes e Temas', icon: Users },
