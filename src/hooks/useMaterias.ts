@@ -32,13 +32,29 @@ interface FetchMateriasResponse {
   total: number;
 }
 
+function getFriendlyErrorMessage(message: string) {
+  if (
+    message.includes('External data source is unavailable') ||
+    message.includes('failed to lookup address information') ||
+    message.includes('Name or service not known')
+  ) {
+    return 'The external data source is unavailable. Verify that the external project is active and that the configured URL is correct.';
+  }
+
+  if (message.includes('[object Object]') || message.includes('Unknown error')) {
+    return 'Could not load data from the external source because the backend returned an invalid error response.';
+  }
+
+  return message;
+}
+
 async function fetchMaterias(): Promise<Materia[]> {
   const { data, error } = await supabase.functions.invoke('fetch-materias');
-  
+
   if (error) {
-    throw new Error(error.message);
+    throw new Error(getFriendlyErrorMessage(error.message));
   }
-  
+
   const response = data as FetchMateriasResponse;
   return response.data || [];
 }
@@ -47,6 +63,7 @@ export function useMaterias() {
   return useQuery({
     queryKey: ['materias'],
     queryFn: fetchMaterias,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
+    retry: false,
   });
 }
